@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AIを「検索」ではなく「アシスタント」として使う - AI Tips Weekly vol.2</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      font-family: "Noto Sans JP", -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #1a1a1a;
+      color: #faf9f7;
+    }
+
+    /* ── Slide container ── */
+    .slides {
+      height: 100vh;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 48px;
+      opacity: 0;
+      transform: translateX(40px);
+      transition: opacity 0.4s, transform 0.4s;
+      pointer-events: none;
+    }
+
+    .slide.active {
+      opacity: 1;
+      transform: translateX(0);
+      pointer-events: auto;
+    }
+
+    .slide-inner {
+      max-width: 860px;
+      width: 100%;
+    }
+
+    /* ── Navigation ── */
+    .nav {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      z-index: 100;
+    }
+
+    .nav-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.3);
+      background: rgba(0,0,0,0.5);
+      color: #fff;
+      font-size: 1.2rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+      backdrop-filter: blur(8px);
+    }
+
+    .nav-btn:hover { border-color: #FF6B35; color: #FF6B35; }
+
+    .nav-counter {
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.5);
+      min-width: 60px;
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .progress {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 3px;
+      background: #FF6B35;
+      transition: width 0.4s;
+      z-index: 100;
+    }
+
+    /* ── Typography ── */
+    .slide h1 {
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 900;
+      line-height: 1.3;
+      margin-bottom: 20px;
+    }
+
+    .slide h2 {
+      font-size: clamp(1.4rem, 3.5vw, 2rem);
+      font-weight: 900;
+      line-height: 1.4;
+      margin-bottom: 24px;
+    }
+
+    .slide p {
+      font-size: clamp(0.95rem, 1.8vw, 1.15rem);
+      line-height: 1.9;
+      color: rgba(255,255,255,0.75);
+      margin-bottom: 16px;
+    }
+
+    .slide p strong { color: #faf9f7; }
+
+    .accent { color: #FF6B35; }
+
+    .section-num {
+      font-size: clamp(3rem, 8vw, 5rem);
+      font-weight: 900;
+      color: rgba(255,255,255,0.06);
+      line-height: 1;
+      margin-bottom: -12px;
+    }
+
+    .label {
+      display: inline-block;
+      border: 1px solid rgba(255,255,255,0.3);
+      padding: 4px 14px;
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      margin-bottom: 24px;
+    }
+
+    /* ── Components ── */
+    .point-list {
+      list-style: none;
+      margin: 20px 0;
+    }
+
+    .point-list li {
+      padding: 10px 0 10px 24px;
+      position: relative;
+      color: rgba(255,255,255,0.75);
+      font-size: clamp(0.9rem, 1.6vw, 1.05rem);
+      line-height: 1.7;
+    }
+
+    .point-list li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 18px;
+      width: 10px;
+      height: 3px;
+      background: #FF6B35;
+    }
+
+    .point-list li strong { color: #faf9f7; }
+
+    .compare {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin: 24px 0;
+    }
+
+    @media (max-width: 700px) {
+      .compare { grid-template-columns: 1fr; gap: 12px; }
+    }
+
+    .compare-box {
+      padding: 24px;
+      border-radius: 10px;
+      font-size: clamp(0.85rem, 1.4vw, 0.95rem);
+      line-height: 1.8;
+      color: #1a1a1a;
+    }
+
+    .compare-box.before { background: #e8e4de; }
+    .compare-box.after { background: #c8e6c9; }
+
+    .compare-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      margin-bottom: 10px;
+      color: #888;
+    }
+
+    .compare-box.after .compare-label { color: #2e7d32; }
+
+    .callout {
+      border-left: 3px solid #FF6B35;
+      padding: 16px 20px;
+      margin: 20px 0;
+      background: rgba(255,107,53,0.08);
+      border-radius: 0 8px 8px 0;
+    }
+
+    .callout-title {
+      font-weight: 700;
+      font-size: 0.8rem;
+      color: #FF6B35;
+      margin-bottom: 4px;
+      letter-spacing: 0.05em;
+    }
+
+    .callout p { margin-bottom: 0; }
+
+    .callout.warn { border-left-color: #e53935; background: rgba(229,57,53,0.08); }
+    .callout.warn .callout-title { color: #ef5350; }
+
+    /* ── Prompt collection ── */
+    .prompt-card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      padding: 20px 24px;
+      margin-bottom: 14px;
+      position: relative;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+
+    .prompt-card:hover { border-color: #FF6B35; }
+
+    .prompt-card .prompt-card-title {
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: #FF6B35;
+      margin-bottom: 6px;
+    }
+
+    .prompt-card .prompt-text {
+      font-size: clamp(0.8rem, 1.3vw, 0.9rem);
+      color: rgba(255,255,255,0.8);
+      line-height: 1.7;
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: rgba(255,255,255,0.1);
+      border: none;
+      color: rgba(255,255,255,0.5);
+      font-size: 0.7rem;
+      padding: 4px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .copy-btn:hover { background: #FF6B35; color: #fff; }
+    .copy-btn.copied { background: #2e7d32; color: #fff; }
+
+    /* ── Title slide special ── */
+    .slide.title-slide .slide-inner {
+      max-width: 760px;
+    }
+
+    .slide.end-slide {
+      background: #FF6B35;
+    }
+
+    .slide.end-slide h2 { color: #fff; }
+    .slide.end-slide p { color: rgba(255,255,255,0.85); }
+
+    @media (max-width: 600px) {
+      .slide { padding: 24px 20px 80px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="progress" id="progress"></div>
+
+<div class="slides" id="slides">
+
+  <!-- ━━ Slide 1: Title ━━ -->
+  <div class="slide title-slide active">
+    <div class="slide-inner">
+      <span class="label">AI TIPS WEEKLY vol.2</span>
+      <h1>AIを「検索」ではなく<br><span class="accent">「アシスタント」</span>として使う</h1>
+      <p>調べ物の道具だと思っているうちは、AIの便利さは半分も見えません。<br>今日は「仕事をひとつ渡してみる」ための、最初の3つの使い方を紹介します。</p>
+      <p style="margin-top:32px; font-size:0.85rem; color:rgba(255,255,255,0.35);">← → キーまたはクリックで進む</p>
+    </div>
+  </div>
+
+  <!-- ━━ Slide 2: つかみ ━━ -->
+  <div class="slide">
+    <div class="slide-inner">
+      <h2>AIは「検索エンジン」ではなく<br><span class="accent">「文章を作ってくれる新人スタッフ」</span></h2>
+      <p>検索は「探す」道具。見つけた後の作業は全部自分がやります。<br>AIは違います。<strong>「〜を書いて」「〜をまとめて」と頼むと、成果物そのものが返ってくる</strong>のが最大の違いです。</p>
+      <ul class="point-list">
+        <li><strong>検索的な使い方</strong> —「インボイス 2割特例 とは」→ 説明が返るだけ。ググるのと大差ない</li>
+        <li><strong>アシスタント的な使い方</strong> —「2割特例を、飲食店の店主に説明する文章を書いて」→ そのまま使える文章が返る</li>
+        <li>頼み方は話し言葉でOK。<strong>新人に口頭で指示するのと同じ感覚</strong>でかまいません</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ━━ Slide 3: 01 顧問先メール ━━ -->
+  <div class="slide">
+    <div class="slide-inner">
+      <div class="section-num">01</div>
+      <h2>顧問先へのメールを<span class="accent">下書きさせる</span></h2>
+      <p>資料依頼、期限のリマインド、日程調整——。毎日書いているメール、1通あたり10〜15分かかっていませんか?<br>AIに下書きさせれば<strong>「書く」仕事が「直す」仕事に変わり、2〜3分で終わります</strong>。</p>
+      <div class="callout">
+        <div class="callout-title">コツ</div>
+        <p>「誰宛か(相手のITリテラシーも)」「何をお願いするか」「期限」の3つを伝えるだけで、驚くほどそれらしい下書きが返ってきます。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ━━ Slide 4: Before/After ━━ -->
+  <div class="slide">
+    <div class="slide-inner">
+      <h2>頼み方の<span class="accent">Before / After</span></h2>
+      <div class="compare">
+        <div class="compare-box before">
+          <div class="compare-label">BEFORE — ざっくりすぎる</div>
+          顧問先に資料をお願いするメールを書いて。
+        </div>
+        <div class="compare-box after">
+          <div class="compare-label">AFTER — 状況を伝える</div>
+          顧問先(製造業、社長は60代でメールは読むが苦手)宛に、年末調整に必要な書類の提出をお願いするメールを書いてください。期限は11月20日。必要書類は箇条書きにして、専門用語を使わず、やわらかい文面で。
+        </div>
+      </div>
+      <div class="callout">
+        <div class="callout-title">やってみよう</div>
+        <p>返ってきた下書きに「もう少し丁寧に」「短くして」と追加で頼めば、何度でも書き直してくれます。<strong>一発で完璧を狙わず、会話で仕上げる</strong>のがコツです。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ━━ Slide 5: 02 専門用語の翻訳 ━━ -->
+  <div class="slide">
+    <div class="slide-inner">
+      <div class="section-num">02</div>
+      <h2>専門用語を<span class="accent">「顧問先の言葉」</span>に翻訳する</h2>
+      <p>私たちには当たり前の言葉も、顧問先には伝わらないことがよくあります。<br>AIは<strong>「相手に合わせた言い換え」</strong>がとても得意です。</p>
+      <ul class="point-list">
+        <li>「<strong>インボイスの2割特例</strong>を、パン屋のご主人にわかるように3行で説明して」</li>
+        <li>「<strong>倒産防止共済の損金算入</strong>を、節税に興味がある社長向けにメリット・注意点つきで」</li>
+        <li>「この<strong>税務署からのお知らせ</strong>を、顧問先にそのまま転送できるやさしい文章に書き直して」</li>
+      </ul>
+      <p>説明した内容が正しいかの最終チェックは自分の目で。<strong>「わかりやすくする」部分だけAIに任せる</strong>のが安全な分担です。</p>
+    </div>
+  </div>
+
+  <!-- ━━ Slide 6: 03 要約 ━━ -->
+  <div class="slide">
+    <div class="slide-inner">
+      <div class="section-num">03</div>
+      <h2>長い資料を<span class="accent">「3ポイント」</span>に要約させる</h2>
+      <p>税制改正の解説、国税庁のパンフレット、セミナー資料——。読まなきゃと思って積んである資料、ありませんか?<br>本文を貼り付けて<strong>「実務に関係するポイントだけ3つ」</strong>と頼めば、読む前に全体像がつかめます。</p>
+      <div class="callout warn">
+        <div class="callout-title">ここだけは注意</div>
+        <p>AIは要約は得意ですが、<strong>税法の細かい数字や適用要件を聞くと、もっともらしい間違いを言うことがあります</strong>。金額・期限・要件は必ず原典(条文・国税庁サイト)で確認してください。「要約はAI、確定は原典」が鉄則です。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ━━ Slide 7: 機密情報ルール ━━ -->
+  <div class="slide">
+    <div class="slide-inner">
+      <span class="label" style="border-color:#ef5350; color:#ef5350;">事務所ルール</span>
+      <h2>顧問先の情報は<span class="accent">そのまま貼らない</span></h2>
+      <p>税理士事務所として、これだけは全員で守りましょう。</p>
+      <ul class="point-list">
+        <li><strong>顧問先の実名・住所・マイナンバー・口座情報は入力しない</strong> —「A社」「甲さん」に置き換えてから使う</li>
+        <li><strong>具体的な決算数字もそのまま貼らない</strong> — 桁を丸める・仮の数字に置き換える</li>
+        <li><strong>学習に使われない設定にする</strong> — ChatGPT:「設定 → データコントロール → すべての人のためにモデルを改善する」をオフ</li>
+        <li>迷ったら<strong>「この情報が外に漏れたら困るか?」</strong>で判断。困るなら入れない</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ━━ Slide 8: Prompt collection title ━━ -->
+  <div class="slide">
+    <div class="slide-inner" style="text-align:center;">
+      <span class="label">APPENDIX</span>
+      <h1><span class="accent">コピペで使える</span><br>プロンプト集</h1>
+      <p>カードをクリックするとクリップボードにコピーされます。<br>[ ]の中を自分の状況に書き換えて、AIに貼り付けて使ってください。</p>
+    </div>
+  </div>
+
+  <!-- ━━ Slide 9: Prompt collection ━━ -->
+  <div class="slide">
+    <div class="slide-inner">
+      <h2 style="font-size:1.2rem; margin-bottom:20px;">プロンプト集 — <span class="accent">今日の3つ</span></h2>
+
+      <div class="prompt-card" onclick="copyPrompt(this)">
+        <button class="copy-btn">コピー</button>
+        <div class="prompt-card-title">顧問先への資料依頼メール</div>
+        <div class="prompt-text">顧問先([業種]、[相手の人柄やITリテラシー])宛に、[お願いしたいこと]を依頼するメールを書いてください。期限は[日付]。必要なものは箇条書きにして、専門用語を使わず、丁寧だが堅すぎない文面で。件名も考えてください。</div>
+      </div>
+
+      <div class="prompt-card" onclick="copyPrompt(this)">
+        <button class="copy-btn">コピー</button>
+        <div class="prompt-card-title">専門用語をやさしく言い換える</div>
+        <div class="prompt-text">[専門用語や制度名]を、[相手: 例・飲食店の店主、ITが苦手な60代の社長]にわかるように説明してください。例え話を1つ入れて、3〜5行で。最後に「要するに〜ということです」と一言でまとめてください。</div>
+      </div>
+
+      <div class="prompt-card" onclick="copyPrompt(this)">
+        <button class="copy-btn">コピー</button>
+        <div class="prompt-card-title">長い資料を実務目線で要約</div>
+        <div class="prompt-text">以下の資料を要約してください。読者は税理士事務所の職員です。「一言で言うと」「実務に関係するポイント3つ」「顧問先に伝えるべきこと」の3ブロックで。なお、金額や適用要件は原文の表現をそのまま使ってください。&#10;&#10;（ここに資料の本文を貼り付け）</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ━━ Slide 10: 宿題 ━━ -->
+  <div class="slide">
+    <div class="slide-inner">
+      <span class="label">今週の宿題</span>
+      <h2>今週、<span class="accent">メール1通だけ</span><br>AIに下書きさせてみてください</h2>
+      <p>顧問先宛でも、所内の連絡でもかまいません。<br>プロンプト集の1つ目をコピーして、[ ]を埋めて送信するだけです。</p>
+      <p><strong>「自分で書くより速かったか?」を来週教えてください。</strong>うまくいかなかった例も大歓迎です。それが次回のネタになります。</p>
+    </div>
+  </div>
+
+  <!-- ━━ Slide 11: End ━━ -->
+  <div class="slide end-slide">
+    <div class="slide-inner" style="text-align:center;">
+      <h2 style="font-size:clamp(1.6rem, 4vw, 2.4rem); margin-bottom:16px;">検索をやめて、<br>仕事をひとつ渡してみる。</h2>
+      <p style="color:rgba(255,255,255,0.85);">最初の1回は誰でもぎこちないものです。<br>AIは何度やり直させても嫌な顔をしないので、気軽に試してください。</p>
+      <p style="margin-top:32px; font-size:0.85rem; color:rgba(255,255,255,0.6);">AI Tips Weekly vol.2 はじめの一歩編 | 2026年7月</p>
+    </div>
+  </div>
+
+</div>
+
+<!-- ━━ Navigation ━━ -->
+<div class="nav">
+  <button class="nav-btn" id="prevBtn" onclick="changeSlide(-1)">&#8592;</button>
+  <span class="nav-counter" id="counter">1 / 11</span>
+  <button class="nav-btn" id="nextBtn" onclick="changeSlide(1)">&#8594;</button>
+</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const counter = document.getElementById('counter');
+  const progress = document.getElementById('progress');
+  let current = 0;
+
+  function showSlide(index) {
+    slides.forEach((s, i) => {
+      s.classList.remove('active');
+      s.style.transform = i < index ? 'translateX(-40px)' : 'translateX(40px)';
+    });
+    slides[index].classList.add('active');
+    slides[index].style.transform = 'translateX(0)';
+    counter.textContent = (index + 1) + ' / ' + slides.length;
+    progress.style.width = ((index + 1) / slides.length * 100) + '%';
+  }
+
+  function changeSlide(dir) {
+    const next = current + dir;
+    if (next < 0 || next >= slides.length) return;
+    current = next;
+    showSlide(current);
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') {
+      e.preventDefault();
+      changeSlide(1);
+    }
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      changeSlide(-1);
+    }
+  });
+
+  let touchStartX = 0;
+  document.addEventListener('touchstart', (e) => { touchStartX = e.touches[0].clientX; });
+  document.addEventListener('touchend', (e) => {
+    const diff = touchStartX - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 50) changeSlide(diff > 0 ? 1 : -1);
+  });
+
+  function copyPrompt(card) {
+    const text = card.querySelector('.prompt-text').textContent;
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = card.querySelector('.copy-btn');
+      btn.textContent = 'OK!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'コピー'; btn.classList.remove('copied'); }, 1500);
+    });
+  }
+
+  showSlide(0);
+</script>
+
+</body>
+</html>
