@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AIで「伝わる資料」をつくる技術 - AI Tips Collection</title>
+  <title>AIで「伝わる資料」をつくる技術 - AI Tips Weekly vol.1</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap');
 
@@ -13,11 +13,10 @@
       height: 100%;
       overflow: hidden;
       font-family: "Noto Sans JP", -apple-system, BlinkMacSystemFont, sans-serif;
-      background: #1a1a1a;
-      color: #faf9f7;
+      background: #FDFAF6;
+      color: #2C2416;
     }
 
-    /* ── Slide container ── */
     .slides {
       height: 100vh;
       overflow: hidden;
@@ -48,7 +47,6 @@
       width: 100%;
     }
 
-    /* ── Navigation ── */
     .nav {
       position: fixed;
       bottom: 24px;
@@ -61,26 +59,28 @@
     }
 
     .nav-btn {
-      width: 44px;
-      height: 44px;
+      width: 48px;
+      height: 48px;
       border-radius: 50%;
-      border: 2px solid rgba(255,255,255,0.3);
-      background: rgba(0,0,0,0.5);
-      color: #fff;
-      font-size: 1.2rem;
+      border: 2px solid #2B8C7E;
+      background: #fff;
+      color: #2B8C7E;
+      font-size: 1.3rem;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       transition: all 0.15s;
-      backdrop-filter: blur(8px);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
     }
 
-    .nav-btn:hover { border-color: #FF6B35; color: #FF6B35; }
+    .nav-btn:hover, .nav-btn:active { background: #2B8C7E; color: #fff; }
 
     .nav-counter {
       font-size: 0.8rem;
-      color: rgba(255,255,255,0.5);
+      color: #8C7B6B;
       min-width: 60px;
       text-align: center;
       font-variant-numeric: tabular-nums;
@@ -91,17 +91,17 @@
       top: 0;
       left: 0;
       height: 3px;
-      background: #FF6B35;
+      background: #2B8C7E;
       transition: width 0.4s;
       z-index: 100;
     }
 
-    /* ── Typography ── */
     .slide h1 {
       font-size: clamp(2rem, 5vw, 3.2rem);
       font-weight: 900;
       line-height: 1.3;
       margin-bottom: 20px;
+      color: #2C2416;
     }
 
     .slide h2 {
@@ -109,37 +109,39 @@
       font-weight: 900;
       line-height: 1.4;
       margin-bottom: 24px;
+      color: #2C2416;
     }
 
     .slide p {
       font-size: clamp(0.95rem, 1.8vw, 1.15rem);
       line-height: 1.9;
-      color: rgba(255,255,255,0.75);
+      color: #5C4F3D;
       margin-bottom: 16px;
     }
 
-    .slide p strong { color: #faf9f7; }
+    .slide p strong { color: #2C2416; }
 
-    .accent { color: #FF6B35; }
+    .accent { color: #2B8C7E; }
 
     .section-num {
       font-size: clamp(3rem, 8vw, 5rem);
       font-weight: 900;
-      color: rgba(255,255,255,0.06);
+      color: rgba(43,140,126,0.08);
       line-height: 1;
       margin-bottom: -12px;
     }
 
     .label {
       display: inline-block;
-      border: 1px solid rgba(255,255,255,0.3);
+      border: 1px solid #2B8C7E;
+      color: #2B8C7E;
       padding: 4px 14px;
       font-size: 0.75rem;
       letter-spacing: 0.1em;
       margin-bottom: 24px;
+      border-radius: 4px;
     }
 
-    /* ── Components ── */
     .point-list {
       list-style: none;
       margin: 20px 0;
@@ -148,7 +150,7 @@
     .point-list li {
       padding: 10px 0 10px 24px;
       position: relative;
-      color: rgba(255,255,255,0.75);
+      color: #5C4F3D;
       font-size: clamp(0.9rem, 1.6vw, 1.05rem);
       line-height: 1.7;
     }
@@ -160,10 +162,10 @@
       top: 18px;
       width: 10px;
       height: 3px;
-      background: #FF6B35;
+      background: #2B8C7E;
     }
 
-    .point-list li strong { color: #faf9f7; }
+    .point-list li strong { color: #2C2416; }
 
     .compare {
       display: grid;
@@ -181,59 +183,34 @@
       border-radius: 10px;
       font-size: clamp(0.85rem, 1.4vw, 0.95rem);
       line-height: 1.8;
-      color: #1a1a1a;
+      color: #2C2416;
     }
 
-    .compare-box.before { background: #e8e4de; }
-    .compare-box.after { background: #c8e6c9; }
+    .compare-box.before { background: #F0ECE6; }
+    .compare-box.after { background: #D4EDDA; }
 
     .compare-label {
       font-size: 0.7rem;
       font-weight: 700;
       letter-spacing: 0.1em;
       margin-bottom: 10px;
-      color: #888;
+      color: #8C7B6B;
     }
 
-    .compare-box.after .compare-label { color: #2e7d32; }
-
-    .prompt-block {
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 10px;
-      padding: 24px;
-      margin: 20px 0;
-      font-size: clamp(0.85rem, 1.5vw, 1rem);
-      line-height: 1.9;
-      position: relative;
-      color: rgba(255,255,255,0.85);
-    }
-
-    .prompt-label {
-      position: absolute;
-      top: -10px;
-      left: 16px;
-      background: #FF6B35;
-      color: #fff;
-      font-size: 0.65rem;
-      font-weight: 700;
-      padding: 2px 10px;
-      border-radius: 4px;
-      letter-spacing: 0.05em;
-    }
+    .compare-box.after .compare-label { color: #2B8C7E; }
 
     .callout {
-      border-left: 3px solid #FF6B35;
+      border-left: 3px solid #2B8C7E;
       padding: 16px 20px;
       margin: 20px 0;
-      background: rgba(255,107,53,0.08);
+      background: rgba(43,140,126,0.06);
       border-radius: 0 8px 8px 0;
     }
 
     .callout-title {
       font-weight: 700;
       font-size: 0.8rem;
-      color: #FF6B35;
+      color: #2B8C7E;
       margin-bottom: 4px;
       letter-spacing: 0.05em;
     }
@@ -251,45 +228,44 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      color: #faf9f7;
+      color: #2C2416;
       text-decoration: none;
       font-size: 0.8rem;
       font-weight: 700;
       padding: 8px 16px;
-      border: 1px solid rgba(255,255,255,0.25);
+      border: 1px solid #E8E2D9;
       border-radius: 6px;
       transition: all 0.15s;
     }
 
-    .yt-link:hover { border-color: #FF6B35; color: #FF6B35; }
+    .yt-link:hover { border-color: #2B8C7E; color: #2B8C7E; }
 
-    .yt-link svg { width: 16px; height: 12px; flex-shrink: 0; }
-    .yt-link:hover svg { fill: #FF6B35; }
+    .yt-link svg { width: 16px; height: 12px; flex-shrink: 0; fill: #D4644A; }
 
-    /* ── Prompt collection ── */
     .prompt-card {
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.1);
+      background: #fff;
+      border: 1px solid #E8E2D9;
       border-radius: 10px;
       padding: 20px 24px;
       margin-bottom: 14px;
       position: relative;
       cursor: pointer;
-      transition: border-color 0.15s;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
     }
 
-    .prompt-card:hover { border-color: #FF6B35; }
+    .prompt-card:hover { border-color: #2B8C7E; box-shadow: 0 2px 12px rgba(43,140,126,0.1); }
 
     .prompt-card .prompt-card-title {
       font-weight: 700;
       font-size: 0.85rem;
-      color: #FF6B35;
+      color: #2B8C7E;
       margin-bottom: 6px;
     }
 
     .prompt-card .prompt-text {
       font-size: clamp(0.8rem, 1.3vw, 0.9rem);
-      color: rgba(255,255,255,0.8);
+      color: #5C4F3D;
       line-height: 1.7;
     }
 
@@ -297,9 +273,9 @@
       position: absolute;
       top: 12px;
       right: 12px;
-      background: rgba(255,255,255,0.1);
+      background: #F0ECE6;
       border: none;
-      color: rgba(255,255,255,0.5);
+      color: #8C7B6B;
       font-size: 0.7rem;
       padding: 4px 10px;
       border-radius: 4px;
@@ -307,20 +283,19 @@
       transition: all 0.15s;
     }
 
-    .copy-btn:hover { background: #FF6B35; color: #fff; }
-    .copy-btn.copied { background: #2e7d32; color: #fff; }
+    .copy-btn:hover { background: #2B8C7E; color: #fff; }
+    .copy-btn.copied { background: #2B8C7E; color: #fff; }
 
-    /* ── Title slide special ── */
     .slide.title-slide .slide-inner {
       max-width: 760px;
     }
 
     .slide.end-slide {
-      background: #FF6B35;
+      background: #2B8C7E;
     }
 
     .slide.end-slide h2 { color: #fff; }
-    .slide.end-slide p { color: rgba(255,255,255,0.85); }
+    .slide.end-slide p { color: rgba(255,255,255,0.9); }
 
     @media (max-width: 600px) {
       .slide { padding: 24px 20px 80px; }
@@ -333,17 +308,15 @@
 
 <div class="slides" id="slides">
 
-  <!-- ━━ Slide 1: Title ━━ -->
   <div class="slide title-slide active">
     <div class="slide-inner">
-      <span class="label">AI TIPS COLLECTION vol.1</span>
+      <span class="label">AI TIPS WEEKLY vol.1</span>
       <h1>AIで<span class="accent">「伝わる資料」</span><br>をつくる技術</h1>
       <p>プロンプトの書き方から、AIっぽさの消し方、デザインの整え方まで。<br>今日から仕事で使える実践テクニック集。</p>
-      <p style="margin-top:32px; font-size:0.85rem; color:rgba(255,255,255,0.35);">← → キーまたはクリックで進む</p>
+      <p style="margin-top:32px; font-size:0.85rem; color:#8C7B6B;">← → キーまたはクリックで進む</p>
     </div>
   </div>
 
-  <!-- ━━ Slide 2: 01 Prompt basics ━━ -->
   <div class="slide">
     <div class="slide-inner">
       <div class="section-num">01</div>
@@ -357,7 +330,6 @@
     </div>
   </div>
 
-  <!-- ━━ Slide 3: Before/After ━━ -->
   <div class="slide">
     <div class="slide-inner">
       <h2>Before / After で見る<span class="accent">指示の差</span></h2>
@@ -388,7 +360,6 @@
     </div>
   </div>
 
-  <!-- ━━ Slide 4: 02 Slide creation ━━ -->
   <div class="slide">
     <div class="slide-inner">
       <div class="section-num">02</div>
@@ -417,7 +388,6 @@
     </div>
   </div>
 
-  <!-- ━━ Slide 5: 03 AI-like text ━━ -->
   <div class="slide">
     <div class="slide-inner">
       <div class="section-num">03</div>
@@ -432,7 +402,6 @@
     </div>
   </div>
 
-  <!-- ━━ Slide 6: AI text Before/After ━━ -->
   <div class="slide">
     <div class="slide-inner">
       <h2>文章の<span class="accent">Before / After</span></h2>
@@ -459,7 +428,6 @@
     </div>
   </div>
 
-  <!-- ━━ Slide 7: 04 Meeting notes ━━ -->
   <div class="slide">
     <div class="slide-inner">
       <div class="section-num">04</div>
@@ -482,7 +450,6 @@
     </div>
   </div>
 
-  <!-- ━━ Slide 8: 05 Design fix ━━ -->
   <div class="slide">
     <div class="slide-inner">
       <div class="section-num">05</div>
@@ -507,7 +474,6 @@
     </div>
   </div>
 
-  <!-- ━━ Slide 9: Prompt collection title ━━ -->
   <div class="slide">
     <div class="slide-inner" style="text-align:center;">
       <span class="label">APPENDIX</span>
@@ -516,7 +482,6 @@
     </div>
   </div>
 
-  <!-- ━━ Slide 10: Prompt collection 1 ━━ -->
   <div class="slide">
     <div class="slide-inner">
       <h2 style="font-size:1.2rem; margin-bottom:20px;">プロンプト集 — <span class="accent">構成・企画</span></h2>
@@ -541,7 +506,6 @@
     </div>
   </div>
 
-  <!-- ━━ Slide 11: Prompt collection 2 ━━ -->
   <div class="slide">
     <div class="slide-inner">
       <h2 style="font-size:1.2rem; margin-bottom:20px;">プロンプト集 — <span class="accent">文章改善</span></h2>
@@ -566,7 +530,6 @@
     </div>
   </div>
 
-  <!-- ━━ Slide 12: Prompt collection 3 ━━ -->
   <div class="slide">
     <div class="slide-inner">
       <h2 style="font-size:1.2rem; margin-bottom:20px;">プロンプト集 — <span class="accent">議事録・整理</span></h2>
@@ -591,7 +554,6 @@
     </div>
   </div>
 
-  <!-- ━━ Slide 13: Prompt collection 4 ━━ -->
   <div class="slide">
     <div class="slide-inner">
       <h2 style="font-size:1.2rem; margin-bottom:20px;">プロンプト集 — <span class="accent">デザイン指示</span></h2>
@@ -616,77 +578,93 @@
     </div>
   </div>
 
-  <!-- ━━ Slide 14: End ━━ -->
   <div class="slide end-slide">
     <div class="slide-inner" style="text-align:center;">
       <h2 style="font-size:clamp(1.6rem, 4vw, 2.4rem); margin-bottom:16px;">まずは1つ、<br>試してみてください。</h2>
-      <p style="color:rgba(255,255,255,0.85);">完璧な指示を出す必要はありません。<br>AIは何度でもやり直せるので、気軽に「こんな感じで」と話しかけるところから始めましょう。</p>
-      <p style="margin-top:32px; font-size:0.85rem; color:rgba(255,255,255,0.6);">AI Tips Collection vol.1 資料作成編 | 2026年6月</p>
+      <p style="color:rgba(255,255,255,0.9);">完璧な指示を出す必要はありません。<br>AIは何度でもやり直せるので、気軽に「こんな感じで」と話しかけるところから始めましょう。</p>
+      <p style="margin-top:32px; font-size:0.85rem; color:rgba(255,255,255,0.7);">AI Tips Weekly vol.1 資料作成編 | 2026年6月</p>
     </div>
   </div>
 
 </div>
 
-<!-- ━━ Navigation ━━ -->
 <div class="nav">
-  <button class="nav-btn" id="prevBtn" onclick="changeSlide(-1)">&#8592;</button>
+  <button class="nav-btn" id="prevBtn" aria-label="前へ">&#8592;</button>
   <span class="nav-counter" id="counter">1 / 14</span>
-  <button class="nav-btn" id="nextBtn" onclick="changeSlide(1)">&#8594;</button>
+  <button class="nav-btn" id="nextBtn" aria-label="次へ">&#8594;</button>
 </div>
 
 <script>
-  const slides = document.querySelectorAll('.slide');
-  const counter = document.getElementById('counter');
-  const progress = document.getElementById('progress');
-  let current = 0;
+  (function() {
+    var slides = document.querySelectorAll('.slide');
+    var counter = document.getElementById('counter');
+    var progress = document.getElementById('progress');
+    var prevBtn = document.getElementById('prevBtn');
+    var nextBtn = document.getElementById('nextBtn');
+    var current = 0;
 
-  function showSlide(index) {
-    slides.forEach((s, i) => {
-      s.classList.remove('active');
-      s.style.transform = i < index ? 'translateX(-40px)' : 'translateX(40px)';
-    });
-    slides[index].classList.add('active');
-    slides[index].style.transform = 'translateX(0)';
-    counter.textContent = (index + 1) + ' / ' + slides.length;
-    progress.style.width = ((index + 1) / slides.length * 100) + '%';
-  }
-
-  function changeSlide(dir) {
-    const next = current + dir;
-    if (next < 0 || next >= slides.length) return;
-    current = next;
-    showSlide(current);
-  }
-
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') {
-      e.preventDefault();
-      changeSlide(1);
+    function showSlide(index) {
+      for (var i = 0; i < slides.length; i++) {
+        slides[i].classList.remove('active');
+        slides[i].style.transform = i < index ? 'translateX(-40px)' : 'translateX(40px)';
+      }
+      slides[index].classList.add('active');
+      slides[index].style.transform = 'translateX(0)';
+      counter.textContent = (index + 1) + ' / ' + slides.length;
+      progress.style.width = ((index + 1) / slides.length * 100) + '%';
     }
-    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-      e.preventDefault();
-      changeSlide(-1);
+
+    function changeSlide(dir) {
+      var next = current + dir;
+      if (next < 0 || next >= slides.length) return;
+      current = next;
+      showSlide(current);
     }
-  });
 
-  let touchStartX = 0;
-  document.addEventListener('touchstart', (e) => { touchStartX = e.touches[0].clientX; });
-  document.addEventListener('touchend', (e) => {
-    const diff = touchStartX - e.changedTouches[0].clientX;
-    if (Math.abs(diff) > 50) changeSlide(diff > 0 ? 1 : -1);
-  });
+    prevBtn.addEventListener('click', function(e) { e.preventDefault(); e.stopPropagation(); changeSlide(-1); });
+    nextBtn.addEventListener('click', function(e) { e.preventDefault(); e.stopPropagation(); changeSlide(1); });
 
-  function copyPrompt(card) {
-    const text = card.querySelector('.prompt-text').textContent;
-    navigator.clipboard.writeText(text).then(() => {
-      const btn = card.querySelector('.copy-btn');
-      btn.textContent = 'OK!';
-      btn.classList.add('copied');
-      setTimeout(() => { btn.textContent = 'コピー'; btn.classList.remove('copied'); }, 1500);
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') {
+        e.preventDefault();
+        changeSlide(1);
+      }
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        changeSlide(-1);
+      }
     });
-  }
 
-  showSlide(0);
+    document.getElementById('slides').addEventListener('click', function(e) {
+      if (e.target.closest('.prompt-card') || e.target.closest('.copy-btn') || e.target.closest('a')) return;
+      var x = e.clientX;
+      var w = window.innerWidth;
+      if (x > w * 0.5) {
+        changeSlide(1);
+      } else {
+        changeSlide(-1);
+      }
+    });
+
+    var touchStartX = 0;
+    document.addEventListener('touchstart', function(e) { touchStartX = e.touches[0].clientX; });
+    document.addEventListener('touchend', function(e) {
+      var diff = touchStartX - e.changedTouches[0].clientX;
+      if (Math.abs(diff) > 50) changeSlide(diff > 0 ? 1 : -1);
+    });
+
+    window.copyPrompt = function(card) {
+      var text = card.querySelector('.prompt-text').textContent;
+      navigator.clipboard.writeText(text).then(function() {
+        var btn = card.querySelector('.copy-btn');
+        btn.textContent = 'OK!';
+        btn.classList.add('copied');
+        setTimeout(function() { btn.textContent = 'コピー'; btn.classList.remove('copied'); }, 1500);
+      });
+    };
+
+    showSlide(0);
+  })();
 </script>
 
 </body>
