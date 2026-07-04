@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AIで「伝わる資料」をつくる技術 - AI Tips Weekly vol.1</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      font-family: "Noto Sans JP", -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #FDFAF6;
+      color: #2C2416;
+    }
+
+    .slides {
+      height: 100vh;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 48px;
+      opacity: 0;
+      transform: translateX(40px);
+      transition: opacity 0.4s, transform 0.4s;
+      pointer-events: none;
+    }
+
+    .slide.active {
+      opacity: 1;
+      transform: translateX(0);
+      pointer-events: auto;
+    }
+
+    .slide-inner {
+      max-width: 860px;
+      width: 100%;
+    }
+
+    .nav {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      z-index: 100;
+    }
+
+    .nav-btn {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      border: 2px solid #2B8C7E;
+      background: #fff;
+      color: #2B8C7E;
+      font-size: 1.3rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    .nav-btn:hover, .nav-btn:active { background: #2B8C7E; color: #fff; }
+
+    .nav-counter {
+      font-size: 0.8rem;
+      color: #8C7B6B;
+      min-width: 60px;
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .progress {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 3px;
+      background: #2B8C7E;
+      transition: width 0.4s;
+      z-index: 100;
+    }
+
+    .slide h1 {
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 900;
+      line-height: 1.3;
+      margin-bottom: 20px;
+      color: #2C2416;
+    }
+
+    .slide h2 {
+      font-size: clamp(1.4rem, 3.5vw, 2rem);
+      font-weight: 900;
+      line-height: 1.4;
+      margin-bottom: 24px;
+      color: #2C2416;
+    }
+
+    .slide p {
+      font-size: clamp(0.95rem, 1.8vw, 1.15rem);
+      line-height: 1.9;
+      color: #5C4F3D;
+      margin-bottom: 16px;
+    }
+
+    .slide p strong { color: #2C2416; }
+
+    .accent { color: #2B8C7E; }
+
+    .section-num {
+      font-size: clamp(3rem, 8vw, 5rem);
+      font-weight: 900;
+      color: rgba(43,140,126,0.08);
+      line-height: 1;
+      margin-bottom: -12px;
+    }
+
+    .label {
+      display: inline-block;
+      border: 1px solid #2B8C7E;
+      color: #2B8C7E;
+      padding: 4px 14px;
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      margin-bottom: 24px;
+      border-radius: 4px;
+    }
+
+    .point-list {
+      list-style: none;
+      margin: 20px 0;
+    }
+
+    .point-list li {
+      padding: 10px 0 10px 24px;
+      position: relative;
+      color: #5C4F3D;
+      font-size: clamp(0.9rem, 1.6vw, 1.05rem);
+      line-height: 1.7;
+    }
+
+    .point-list li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 18px;
+      width: 10px;
+      height: 3px;
+      background: #2B8C7E;
+    }
+
+    .point-list li strong { color: #2C2416; }
+
+    .compare {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin: 24px 0;
+    }
+
+    @media (max-width: 700px) {
+      .compare { grid-template-columns: 1fr; gap: 12px; }
+    }
+
+    .compare-box {
+      padding: 24px;
+      border-radius: 10px;
+      font-size: clamp(0.85rem, 1.4vw, 0.95rem);
+      line-height: 1.8;
+      color: #2C2416;
+    }
+
+    .compare-box.before { background: #F0ECE6; }
+    .compare-box.after { background: #D4EDDA; }
+
+    .compare-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      margin-bottom: 10px;
+      color: #8C7B6B;
+    }
+
+    .compare-box.after .compare-label { color: #2B8C7E; }
+
+    .callout {
+      border-left: 3px solid #2B8C7E;
+      padding: 16px 20px;
+      margin: 20px 0;
+      background: rgba(43,140,126,0.06);
+      border-radius: 0 8px 8px 0;
+    }
+
+    .callout-title {
+      font-weight: 700;
+      font-size: 0.8rem;
+      color: #2B8C7E;
+      margin-bottom: 4px;
+      letter-spacing: 0.05em;
+    }
+
+    .callout p { margin-bottom: 0; }
+
+    .yt-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .yt-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: #2C2416;
+      text-decoration: none;
+      font-size: 0.8rem;
+      font-weight: 700;
+      padding: 8px 16px;
+      border: 1px solid #E8E2D9;
+      border-radius: 6px;
+      transition: all 0.15s;
+    }
+
+    .yt-link:hover { border-color: #2B8C7E; color: #2B8C7E; }
+
+    .yt-link svg { width: 16px; height: 12px; flex-shrink: 0; fill: #D4644A; }
+
+    .prompt-card {
+      background: #fff;
+      border: 1px solid #E8E2D9;
+      border-radius: 10px;
+      padding: 20px 24px;
+      margin-bottom: 14px;
+      position: relative;
+      cursor: pointer;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    }
+
+    .prompt-card:hover { border-color: #2B8C7E; box-shadow: 0 2px 12px rgba(43,140,126,0.1); }
+
+    .prompt-card .prompt-card-title {
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: #2B8C7E;
+      margin-bottom: 6px;
+    }
+
+    .prompt-card .prompt-text {
+      font-size: clamp(0.8rem, 1.3vw, 0.9rem);
+      color: #5C4F3D;
+      line-height: 1.7;
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: #F0ECE6;
+      border: none;
+      color: #8C7B6B;
+      font-size: 0.7rem;
+      padding: 4px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .copy-btn:hover { background: #2B8C7E; color: #fff; }
+    .copy-btn.copied { background: #2B8C7E; color: #fff; }
+
+    .slide.title-slide .slide-inner {
+      max-width: 760px;
+    }
+
+    .slide.end-slide {
+      background: #2B8C7E;
+    }
+
+    .slide.end-slide h2 { color: #fff; }
+    .slide.end-slide p { color: rgba(255,255,255,0.9); }
+
+    @media (max-width: 600px) {
+      .slide { padding: 24px 20px 80px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="progress" id="progress"></div>
+
+<div class="slides" id="slides">
+
+  <div class="slide title-slide active">
+    <div class="slide-inner">
+      <span class="label">AI TIPS WEEKLY vol.1</span>
+      <h1>AIで<span class="accent">「伝わる資料」</span><br>をつくる技術</h1>
+      <p>プロンプトの書き方から、AIっぽさの消し方、デザインの整え方まで。<br>今日から仕事で使える実践テクニック集。</p>
+      <p style="margin-top:32px; font-size:0.85rem; color:#8C7B6B;">← → キーまたはクリックで進む</p>
+    </div>
+  </div>
+
+  <div class="slide">
+    <div class="slide-inner">
+      <div class="section-num">01</div>
+      <h2>「お願いの仕方」を変えるだけで、<br>AIの出力は別物になる</h2>
+      <p>AIに「プレゼン資料作って」とだけ伝えると、あたりさわりのない教科書みたいな内容が返ってきます。<br>でも、<strong>状況・目的・読む人を具体的に伝える</strong>だけで、出力の質は驚くほど変わります。</p>
+      <ul class="point-list">
+        <li><strong>誰に向けて？</strong> —「新卒向け」「経営層への報告」で言葉の硬さが変わる</li>
+        <li><strong>何のために？</strong> —「承認を取りたい」「共有したい」で構成が変わる</li>
+        <li><strong>どれくらいの量？</strong> —「スライド7枚」「A4で1枚」と枠を決めると具体的に</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="slide">
+    <div class="slide-inner">
+      <h2>Before / After で見る<span class="accent">指示の差</span></h2>
+      <div class="compare">
+        <div class="compare-box before">
+          <div class="compare-label">BEFORE — ざっくりすぎる</div>
+          リモートワークについてプレゼン資料を作ってください。
+        </div>
+        <div class="compare-box after">
+          <div class="compare-label">AFTER — 具体的な指示</div>
+          営業部（20名）向けに「リモートワークの生産性向上」をテーマにした10分のプレゼンを準備します。スライド7枚で、各ページに見出し・要点3つ・話す流れを入れた構成案を作ってください。
+        </div>
+      </div>
+      <div class="callout">
+        <div class="callout-title">やってみよう</div>
+        <p>今抱えている資料の1つで「誰に・何のために・どれくらい」を書き出してからAIに渡してみてください。</p>
+      </div>
+      <div class="yt-links">
+        <a class="yt-link" href="https://www.youtube.com/watch?v=C0KstdW7x4g" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 17"><path d="M23.5 2.5a3 3 0 0 0-2.1-2.1C19.5 0 12 0 12 0S4.5 0 2.6.4A3 3 0 0 0 .5 2.5 31.4 31.4 0 0 0 0 8.5c0 2 .2 4 .5 6a3 3 0 0 0 2.1 2.1c1.9.4 9.4.4 9.4.4s7.5 0 9.4-.4a3 3 0 0 0 2.1-2.1c.3-2 .5-4 .5-6s-.2-4-.5-6Z"/><path fill="#fff" d="m9.6 12.1 6.3-3.6-6.3-3.6v7.2Z"/></svg>
+          プロンプトのコツを実演解説
+        </a>
+        <a class="yt-link" href="https://www.youtube.com/watch?v=n1DOvZZU20k" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 17"><path d="M23.5 2.5a3 3 0 0 0-2.1-2.1C19.5 0 12 0 12 0S4.5 0 2.6.4A3 3 0 0 0 .5 2.5 31.4 31.4 0 0 0 0 8.5c0 2 .2 4 .5 6a3 3 0 0 0 2.1 2.1c1.9.4 9.4.4 9.4.4s7.5 0 9.4-.4a3 3 0 0 0 2.1-2.1c.3-2 .5-4 .5-6s-.2-4-.5-6Z"/><path fill="#fff" d="m9.6 12.1 6.3-3.6-6.3-3.6v7.2Z"/></svg>
+          初心者→プロレベルの指示術
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide">
+    <div class="slide-inner">
+      <div class="section-num">02</div>
+      <h2>スライドを<span class="accent">「ゼロから考えない」</span><br>という選択肢</h2>
+      <p>真っ白なスライドを前に「何から書こう…」と悩む時間が一番もったいない。<br>AIに構成のたたき台を出してもらえば、<strong>「考える」から「選ぶ・直す」</strong>に変わります。</p>
+      <div class="callout">
+        <div class="callout-title">ツールの使い分け</div>
+        <p><strong>Gemini</strong> → Googleスライドに直接出力できる。Google Workspace派に最適。<br>
+        <strong>ChatGPT</strong> → 構成案を練るのが得意。文章の壁打ち相手として優秀。<br>
+        <strong>Gamma / Canva AI</strong> → 見た目の整ったスライドをそのまま生成。</p>
+      </div>
+      <div class="yt-links">
+        <a class="yt-link" href="https://www.youtube.com/watch?v=kTuC3YeqmOQ" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 17"><path d="M23.5 2.5a3 3 0 0 0-2.1-2.1C19.5 0 12 0 12 0S4.5 0 2.6.4A3 3 0 0 0 .5 2.5 31.4 31.4 0 0 0 0 8.5c0 2 .2 4 .5 6a3 3 0 0 0 2.1 2.1c1.9.4 9.4.4 9.4.4s7.5 0 9.4-.4a3 3 0 0 0 2.1-2.1c.3-2 .5-4 .5-6s-.2-4-.5-6Z"/><path fill="#fff" d="m9.6 12.1 6.3-3.6-6.3-3.6v7.2Z"/></svg>
+          AIフル活用でプレゼン資料作成
+        </a>
+        <a class="yt-link" href="https://www.youtube.com/watch?v=YvJqRImsk-k" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 17"><path d="M23.5 2.5a3 3 0 0 0-2.1-2.1C19.5 0 12 0 12 0S4.5 0 2.6.4A3 3 0 0 0 .5 2.5 31.4 31.4 0 0 0 0 8.5c0 2 .2 4 .5 6a3 3 0 0 0 2.1 2.1c1.9.4 9.4.4 9.4.4s7.5 0 9.4-.4a3 3 0 0 0 2.1-2.1c.3-2 .5-4 .5-6s-.2-4-.5-6Z"/><path fill="#fff" d="m9.6 12.1 6.3-3.6-6.3-3.6v7.2Z"/></svg>
+          Geminiで爆速スライド作成
+        </a>
+        <a class="yt-link" href="https://www.youtube.com/watch?v=80Vk9QVE7JE" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 17"><path d="M23.5 2.5a3 3 0 0 0-2.1-2.1C19.5 0 12 0 12 0S4.5 0 2.6.4A3 3 0 0 0 .5 2.5 31.4 31.4 0 0 0 0 8.5c0 2 .2 4 .5 6a3 3 0 0 0 2.1 2.1c1.9.4 9.4.4 9.4.4s7.5 0 9.4-.4a3 3 0 0 0 2.1-2.1c.3-2 .5-4 .5-6s-.2-4-.5-6Z"/><path fill="#fff" d="m9.6 12.1 6.3-3.6-6.3-3.6v7.2Z"/></svg>
+          ChatGPTで資料作成・全手順
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide">
+    <div class="slide-inner">
+      <div class="section-num">03</div>
+      <h2>AIが書いた文章の<br><span class="accent">「AIっぽさ」</span>を消す</h2>
+      <p>AIの文章が「教科書っぽい」「冷たい」と感じるのは、AIの限界ではなく<strong>指示の出し方で直せます</strong>。</p>
+      <ul class="point-list">
+        <li><strong>「〜することが重要です」の連発</strong> — 研修資料のような言い回し</li>
+        <li><strong>抽象的で具体例がない</strong> — 「効率化が期待できます」だけで終わる</li>
+        <li><strong>感情や体温がない</strong> — 正しいけれど誰が書いても同じに見える</li>
+        <li><strong>箇条書きが多すぎ</strong> — 構造化しすぎて逆に読みづらい</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="slide">
+    <div class="slide-inner">
+      <h2>文章の<span class="accent">Before / After</span></h2>
+      <div class="compare">
+        <div class="compare-box before">
+          <div class="compare-label">BEFORE — AIっぽい文章</div>
+          リモートワークの導入は、業務効率化や従業員満足度の向上において非常に重要な施策です。適切なツールの選定と運用ルールの策定が求められます。
+        </div>
+        <div class="compare-box after">
+          <div class="compare-label">AFTER — 人の体温がある文章</div>
+          うちのチームがリモートに切り替えて3ヶ月。最初は「ちゃんと働いてる？」という空気もありましたが、Slackの非同期ルールを決めたら会議が週4時間減りました。
+        </div>
+      </div>
+      <div class="yt-links">
+        <a class="yt-link" href="https://www.youtube.com/watch?v=QQOAojb1BfE" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 17"><path d="M23.5 2.5a3 3 0 0 0-2.1-2.1C19.5 0 12 0 12 0S4.5 0 2.6.4A3 3 0 0 0 .5 2.5 31.4 31.4 0 0 0 0 8.5c0 2 .2 4 .5 6a3 3 0 0 0 2.1 2.1c1.9.4 9.4.4 9.4.4s7.5 0 9.4-.4a3 3 0 0 0 2.1-2.1c.3-2 .5-4 .5-6s-.2-4-.5-6Z"/><path fill="#fff" d="m9.6 12.1 6.3-3.6-6.3-3.6v7.2Z"/></svg>
+          AI文章の質を上げる神プロンプト
+        </a>
+        <a class="yt-link" href="https://www.youtube.com/watch?v=FLy2zA07A_8" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 17"><path d="M23.5 2.5a3 3 0 0 0-2.1-2.1C19.5 0 12 0 12 0S4.5 0 2.6.4A3 3 0 0 0 .5 2.5 31.4 31.4 0 0 0 0 8.5c0 2 .2 4 .5 6a3 3 0 0 0 2.1 2.1c1.9.4 9.4.4 9.4.4s7.5 0 9.4-.4a3 3 0 0 0 2.1-2.1c.3-2 .5-4 .5-6s-.2-4-.5-6Z"/><path fill="#fff" d="m9.6 12.1 6.3-3.6-6.3-3.6v7.2Z"/></svg>
+          AIを天才にさせるプロンプト術
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide">
+    <div class="slide-inner">
+      <div class="section-num">04</div>
+      <h2>会議メモを<span class="accent">「3行で共有」</span>する</h2>
+      <p>1時間の会議、全員に共有するのに30分かかっていませんか？<br>AIなら、メモを貼り付けるだけで<strong>「決まったこと」「やること」「持ち越し」</strong>に整理してくれます。</p>
+      <div class="callout">
+        <div class="callout-title">時短の流れ</div>
+        <p>スマホで録音 → 文字起こしアプリ（Notta等）でテキスト化 → AIに貼って整理。<br>議事録作成がほぼ自動化できます。</p>
+      </div>
+      <div class="yt-links">
+        <a class="yt-link" href="https://www.youtube.com/watch?v=nirncGy-YQc" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 17"><path d="M23.5 2.5a3 3 0 0 0-2.1-2.1C19.5 0 12 0 12 0S4.5 0 2.6.4A3 3 0 0 0 .5 2.5 31.4 31.4 0 0 0 0 8.5c0 2 .2 4 .5 6a3 3 0 0 0 2.1 2.1c1.9.4 9.4.4 9.4.4s7.5 0 9.4-.4a3 3 0 0 0 2.1-2.1c.3-2 .5-4 .5-6s-.2-4-.5-6Z"/><path fill="#fff" d="m9.6 12.1 6.3-3.6-6.3-3.6v7.2Z"/></svg>
+          無料AIで議事録を超効率化
+        </a>
+        <a class="yt-link" href="https://www.youtube.com/watch?v=uO1Mg9pTdCY" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 17"><path d="M23.5 2.5a3 3 0 0 0-2.1-2.1C19.5 0 12 0 12 0S4.5 0 2.6.4A3 3 0 0 0 .5 2.5 31.4 31.4 0 0 0 0 8.5c0 2 .2 4 .5 6a3 3 0 0 0 2.1 2.1c1.9.4 9.4.4 9.4.4s7.5 0 9.4-.4a3 3 0 0 0 2.1-2.1c.3-2 .5-4 .5-6s-.2-4-.5-6Z"/><path fill="#fff" d="m9.6 12.1 6.3-3.6-6.3-3.6v7.2Z"/></svg>
+          会議を丸ごと取り込むAI活用術
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide">
+    <div class="slide-inner">
+      <div class="section-num">05</div>
+      <h2>AIが作ったデザインの<br><span class="accent">「ダサさ」</span>を直す</h2>
+      <p>AIのスライドは色が多すぎ、装飾過多で読みにくくなりがち。<br><strong>「制約」を与える</strong>だけでかなり改善できます。</p>
+      <ul class="point-list">
+        <li><strong>色は3色以内</strong> — 背景色・文字色・アクセント色だけ</li>
+        <li><strong>フォントは1種類</strong> — 「ゴシック体で統一して」と指定するだけ</li>
+        <li><strong>余白を多めに</strong> — 1スライドの情報は最大3つまで</li>
+        <li><strong>図解はシンプルに</strong> — テキストと矢印だけで表現する</li>
+      </ul>
+      <div class="yt-links">
+        <a class="yt-link" href="https://www.youtube.com/watch?v=dKkJb4VlVQk" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 17"><path d="M23.5 2.5a3 3 0 0 0-2.1-2.1C19.5 0 12 0 12 0S4.5 0 2.6.4A3 3 0 0 0 .5 2.5 31.4 31.4 0 0 0 0 8.5c0 2 .2 4 .5 6a3 3 0 0 0 2.1 2.1c1.9.4 9.4.4 9.4.4s7.5 0 9.4-.4a3 3 0 0 0 2.1-2.1c.3-2 .5-4 .5-6s-.2-4-.5-6Z"/><path fill="#fff" d="m9.6 12.1 6.3-3.6-6.3-3.6v7.2Z"/></svg>
+          AIデザインを格段に上げる裏技7選
+        </a>
+        <a class="yt-link" href="https://www.youtube.com/watch?v=UOm_rKPW-D0" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 17"><path d="M23.5 2.5a3 3 0 0 0-2.1-2.1C19.5 0 12 0 12 0S4.5 0 2.6.4A3 3 0 0 0 .5 2.5 31.4 31.4 0 0 0 0 8.5c0 2 .2 4 .5 6a3 3 0 0 0 2.1 2.1c1.9.4 9.4.4 9.4.4s7.5 0 9.4-.4a3 3 0 0 0 2.1-2.1c.3-2 .5-4 .5-6s-.2-4-.5-6Z"/><path fill="#fff" d="m9.6 12.1 6.3-3.6-6.3-3.6v7.2Z"/></svg>
+          ダサいプレゼンをおしゃれに変身
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide">
+    <div class="slide-inner" style="text-align:center;">
+      <span class="label">APPENDIX</span>
+      <h1><span class="accent">コピペで使える</span><br>プロンプト集</h1>
+      <p>カードをクリックするとクリップボードにコピーされます。<br>そのままAIに貼り付けて使ってください。</p>
+    </div>
+  </div>
+
+  <div class="slide">
+    <div class="slide-inner">
+      <h2 style="font-size:1.2rem; margin-bottom:20px;">プロンプト集 — <span class="accent">構成・企画</span></h2>
+
+      <div class="prompt-card" onclick="copyPrompt(this)">
+        <button class="copy-btn">コピー</button>
+        <div class="prompt-card-title">プレゼン構成案を作る</div>
+        <div class="prompt-text">[対象者]向けに「[テーマ]」をテーマにした[時間]分のプレゼンを準備します。スライド[枚数]枚で、各ページに見出し・要点3つ・話す流れを入れた構成案を作ってください。</div>
+      </div>
+
+      <div class="prompt-card" onclick="copyPrompt(this)">
+        <button class="copy-btn">コピー</button>
+        <div class="prompt-card-title">企画書のたたき台を作る</div>
+        <div class="prompt-text">[プロジェクト名]の企画書を作ってください。構成：背景と課題 → 提案内容 → 期待される効果（数字で） → スケジュール → 必要なリソース → リスクと対策。A4で2枚以内に収まるように。</div>
+      </div>
+
+      <div class="prompt-card" onclick="copyPrompt(this)">
+        <button class="copy-btn">コピー</button>
+        <div class="prompt-card-title">報告書の構成を考える</div>
+        <div class="prompt-text">[プロジェクト名]の月次報告書の構成を考えてください。読者は部長クラスで、5分で要点が掴める分量にしてください。結論を最初に置き、数字で成果を示す構成にしてください。</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide">
+    <div class="slide-inner">
+      <h2 style="font-size:1.2rem; margin-bottom:20px;">プロンプト集 — <span class="accent">文章改善</span></h2>
+
+      <div class="prompt-card" onclick="copyPrompt(this)">
+        <button class="copy-btn">コピー</button>
+        <div class="prompt-card-title">AIっぽさを消して自然にする</div>
+        <div class="prompt-text">以下の文章を書き直してください。条件：「〜することが重要です」「〜が求められます」は使わない。具体的な数字や固有名詞を入れる。書いた人の実感が伝わるように一人称を使う。箇条書きは最大3つまで。&#10;&#10;（ここに文章を貼り付け）</div>
+      </div>
+
+      <div class="prompt-card" onclick="copyPrompt(this)">
+        <button class="copy-btn">コピー</button>
+        <div class="prompt-card-title">文章を読みやすく構造化する</div>
+        <div class="prompt-text">以下の文章を、上司が3分で読めるように構造化してください。見出しは最大3つ、箇条書きは各3項目以内。冒頭に「結論」を30字以内で入れてください。&#10;&#10;（ここに文章を貼り付け）</div>
+      </div>
+
+      <div class="prompt-card" onclick="copyPrompt(this)">
+        <button class="copy-btn">コピー</button>
+        <div class="prompt-card-title">ビジネスメールの下書きを作る</div>
+        <div class="prompt-text">[相手の立場]宛に、[用件]についてのメールを書いてください。トーン：丁寧だが簡潔に。長さ：スクロールせずに読める量。件名も考えてください。</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide">
+    <div class="slide-inner">
+      <h2 style="font-size:1.2rem; margin-bottom:20px;">プロンプト集 — <span class="accent">議事録・整理</span></h2>
+
+      <div class="prompt-card" onclick="copyPrompt(this)">
+        <button class="copy-btn">コピー</button>
+        <div class="prompt-card-title">議事録を3点に整理する</div>
+        <div class="prompt-text">以下の会議メモを3つに分けて整理してください。① 決定事項（確定したこと） ② ネクストアクション（誰が・いつまでに・何をするか） ③ 持ち越し事項（次回以降に議論すること）。各項目は1〜3行で簡潔に。Slackに貼れる形式で。&#10;&#10;（ここにメモを貼り付け）</div>
+      </div>
+
+      <div class="prompt-card" onclick="copyPrompt(this)">
+        <button class="copy-btn">コピー</button>
+        <div class="prompt-card-title">長い資料を要約する</div>
+        <div class="prompt-text">以下の資料を、読んでいない人に1分で説明できるように要約してください。「一言で言うと」「ポイントは3つ」「注意点」の3ブロックで構成してください。&#10;&#10;（ここに資料を貼り付け）</div>
+      </div>
+
+      <div class="prompt-card" onclick="copyPrompt(this)">
+        <button class="copy-btn">コピー</button>
+        <div class="prompt-card-title">情報を比較表にまとめる</div>
+        <div class="prompt-text">以下の情報を比較表にまとめてください。比較軸：[費用 / 導入期間 / 機能 / サポート体制]。表のあとに「おすすめの選択肢」を理由付きで1つ提案してください。&#10;&#10;（ここに情報を貼り付け）</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide">
+    <div class="slide-inner">
+      <h2 style="font-size:1.2rem; margin-bottom:20px;">プロンプト集 — <span class="accent">デザイン指示</span></h2>
+
+      <div class="prompt-card" onclick="copyPrompt(this)">
+        <button class="copy-btn">コピー</button>
+        <div class="prompt-card-title">スライドのデザインルールを指定する</div>
+        <div class="prompt-text">スライドのデザインを以下のルールで整えてください：使用色は白(#FFFFFF)、ダークグレー(#333333)、アクセントに1色だけ。フォントはゴシック体で統一。1スライドに情報は最大3つ。装飾やアイコンは使わない。余白を多くとる。図解は四角形と矢印だけで表現する。</div>
+      </div>
+
+      <div class="prompt-card" onclick="copyPrompt(this)">
+        <button class="copy-btn">コピー</button>
+        <div class="prompt-card-title">図解・フローチャートを作る</div>
+        <div class="prompt-text">[プロセス名]の流れを、5ステップ以内のフローチャートで図解してください。各ステップは動詞で始める短いラベル（10字以内）にして、矢印でつなげてください。Mermaid記法で出力してください。</div>
+      </div>
+
+      <div class="prompt-card" onclick="copyPrompt(this)">
+        <button class="copy-btn">コピー</button>
+        <div class="prompt-card-title">ダサいスライドを改善する指示</div>
+        <div class="prompt-text">このスライドの改善点を指摘してください。チェック項目：色の数が多すぎないか、フォントが統一されているか、1枚の情報量が適切か、余白は十分か、図解がわかりやすいか。各項目にOK/NGとその理由、改善案を出してください。</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide end-slide">
+    <div class="slide-inner" style="text-align:center;">
+      <h2 style="font-size:clamp(1.6rem, 4vw, 2.4rem); margin-bottom:16px;">まずは1つ、<br>試してみてください。</h2>
+      <p style="color:rgba(255,255,255,0.9);">完璧な指示を出す必要はありません。<br>AIは何度でもやり直せるので、気軽に「こんな感じで」と話しかけるところから始めましょう。</p>
+      <p style="margin-top:32px; font-size:0.85rem; color:rgba(255,255,255,0.7);">AI Tips Weekly vol.1 資料作成編 | 2026年6月</p>
+    </div>
+  </div>
+
+</div>
+
+<div class="nav">
+  <button class="nav-btn" id="prevBtn" aria-label="前へ">&#8592;</button>
+  <span class="nav-counter" id="counter">1 / 14</span>
+  <button class="nav-btn" id="nextBtn" aria-label="次へ">&#8594;</button>
+</div>
+
+<script>
+  (function() {
+    var slides = document.querySelectorAll('.slide');
+    var counter = document.getElementById('counter');
+    var progress = document.getElementById('progress');
+    var prevBtn = document.getElementById('prevBtn');
+    var nextBtn = document.getElementById('nextBtn');
+    var current = 0;
+
+    function showSlide(index) {
+      for (var i = 0; i < slides.length; i++) {
+        slides[i].classList.remove('active');
+        slides[i].style.transform = i < index ? 'translateX(-40px)' : 'translateX(40px)';
+      }
+      slides[index].classList.add('active');
+      slides[index].style.transform = 'translateX(0)';
+      counter.textContent = (index + 1) + ' / ' + slides.length;
+      progress.style.width = ((index + 1) / slides.length * 100) + '%';
+    }
+
+    function changeSlide(dir) {
+      var next = current + dir;
+      if (next < 0 || next >= slides.length) return;
+      current = next;
+      showSlide(current);
+    }
+
+    prevBtn.addEventListener('click', function(e) { e.preventDefault(); e.stopPropagation(); changeSlide(-1); });
+    nextBtn.addEventListener('click', function(e) { e.preventDefault(); e.stopPropagation(); changeSlide(1); });
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') {
+        e.preventDefault();
+        changeSlide(1);
+      }
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        changeSlide(-1);
+      }
+    });
+
+    document.getElementById('slides').addEventListener('click', function(e) {
+      if (e.target.closest('.prompt-card') || e.target.closest('.copy-btn') || e.target.closest('a')) return;
+      var x = e.clientX;
+      var w = window.innerWidth;
+      if (x > w * 0.5) {
+        changeSlide(1);
+      } else {
+        changeSlide(-1);
+      }
+    });
+
+    var touchStartX = 0;
+    document.addEventListener('touchstart', function(e) { touchStartX = e.touches[0].clientX; });
+    document.addEventListener('touchend', function(e) {
+      var diff = touchStartX - e.changedTouches[0].clientX;
+      if (Math.abs(diff) > 50) changeSlide(diff > 0 ? 1 : -1);
+    });
+
+    window.copyPrompt = function(card) {
+      var text = card.querySelector('.prompt-text').textContent;
+      navigator.clipboard.writeText(text).then(function() {
+        var btn = card.querySelector('.copy-btn');
+        btn.textContent = 'OK!';
+        btn.classList.add('copied');
+        setTimeout(function() { btn.textContent = 'コピー'; btn.classList.remove('copied'); }, 1500);
+      });
+    };
+
+    showSlide(0);
+  })();
+</script>
+
+</body>
+</html>
