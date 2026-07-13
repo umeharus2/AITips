@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ChatGPT・Gemini・Claude — 「そもそもこれ何?」がわかる10分 - AI Tips Weekly vol.3</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      font-family: "Noto Sans JP", -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #FDFAF6;
+      color: #2C2416;
+    }
+
+    .slides {
+      height: 100vh;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 48px;
+      opacity: 0;
+      transform: translateX(40px);
+      transition: opacity 0.4s, transform 0.4s;
+      pointer-events: none;
+    }
+
+    .slide.active {
+      opacity: 1;
+      transform: translateX(0);
+      pointer-events: auto;
+    }
+
+    .slide-inner {
+      max-width: 860px;
+      width: 100%;
+    }
+
+    .nav {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      z-index: 100;
+    }
+
+    .nav-btn {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      border: 2px solid #2B8C7E;
+      background: #fff;
+      color: #2B8C7E;
+      font-size: 1.3rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    .nav-btn:hover, .nav-btn:active { background: #2B8C7E; color: #fff; }
+
+    .nav-counter {
+      font-size: 0.8rem;
+      color: #8C7B6B;
+      min-width: 60px;
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .progress {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 3px;
+      background: #2B8C7E;
+      transition: width 0.4s;
+      z-index: 100;
+    }
+
+    .slide h1 {
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 900;
+      line-height: 1.3;
+      margin-bottom: 20px;
+      color: #2C2416;
+    }
+
+    .slide h2 {
+      font-size: clamp(1.4rem, 3.5vw, 2rem);
+      font-weight: 900;
+      line-height: 1.4;
+      margin-bottom: 24px;
+      color: #2C2416;
+    }
+
+    .slide p {
+      font-size: clamp(0.95rem, 1.8vw, 1.15rem);
+      line-height: 1.9;
+      color: #5C4F3D;
+      margin-bottom: 16px;
+    }
+
+    .slide p strong { color: #2C2416; }
+
+    .accent { color: #2B8C7E; }
+
+    .section-num {
+      font-size: clamp(3rem, 8vw, 5rem);
+      font-weight: 900;
+      color: rgba(43,140,126,0.08);
+      line-height: 1;
+      margin-bottom: -12px;
+    }
+
+    .label {
+      display: inline-block;
+      border: 1px solid #2B8C7E;
+      color: #2B8C7E;
+      padding: 4px 14px;
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      margin-bottom: 24px;
+      border-radius: 4px;
+    }
+
+    .point-list {
+      list-style: none;
+      margin: 20px 0;
+    }
+
+    .point-list li {
+      padding: 10px 0 10px 24px;
+      position: relative;
+      color: #5C4F3D;
+      font-size: clamp(0.9rem, 1.6vw, 1.05rem);
+      line-height: 1.7;
+    }
+
+    .point-list li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 18px;
+      width: 10px;
+      height: 3px;
+      background: #2B8C7E;
+    }
+
+    .point-list li strong { color: #2C2416; }
+
+    .compare {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin: 24px 0;
+    }
+
+    @media (max-width: 700px) {
+      .compare { grid-template-columns: 1fr; gap: 12px; }
+    }
+
+    .compare-box {
+      padding: 24px;
+      border-radius: 10px;
+      font-size: clamp(0.85rem, 1.4vw, 0.95rem);
+      line-height: 1.8;
+      color: #2C2416;
+    }
+
+    .compare-box.before { background: #F0ECE6; }
+    .compare-box.after { background: #D4EDDA; }
+
+    .compare-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      margin-bottom: 10px;
+      color: #8C7B6B;
+    }
+
+    .compare-box.after .compare-label { color: #2B8C7E; }
+
+    .callout {
+      border-left: 3px solid #2B8C7E;
+      padding: 16px 20px;
+      margin: 20px 0;
+      background: rgba(43,140,126,0.06);
+      border-radius: 0 8px 8px 0;
+    }
+
+    .callout-title {
+      font-weight: 700;
+      font-size: 0.8rem;
+      color: #2B8C7E;
+      margin-bottom: 4px;
+      letter-spacing: 0.05em;
+    }
+
+    .callout p { margin-bottom: 0; }
+
+    .callout.warn { border-left-color: #D4644A; background: rgba(212,100,74,0.06); }
+    .callout.warn .callout-title { color: #D4644A; }
+
+    .prompt-card {
+      background: #fff;
+      border: 1px solid #E8E2D9;
+      border-radius: 10px;
+      padding: 20px 24px;
+      margin-bottom: 14px;
+      position: relative;
+      cursor: pointer;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    }
+
+    .prompt-card:hover { border-color: #2B8C7E; box-shadow: 0 2px 12px rgba(43,140,126,0.1); }
+
+    .prompt-card .prompt-card-title {
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: #2B8C7E;
+      margin-bottom: 6px;
+    }
+
+    .prompt-card .prompt-text {
+      font-size: clamp(0.8rem, 1.3vw, 0.9rem);
+      color: #5C4F3D;
+      line-height: 1.7;
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: #F0ECE6;
+      border: none;
+      color: #8C7B6B;
+      font-size: 0.7rem;
+      padding: 4px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .copy-btn:hover { background: #2B8C7E; color: #fff; }
+    .copy-btn.copied { background: #2B8C7E; color: #fff; }
+
+    .slide.title-slide .slide-inner {
+      max-width: 760px;
+    }
+
+    .slide.end-slide {
+      background: #2B8C7E;
+    }
+
+    .slide.end-slide h2 { color: #fff; }
+    .slide.end-slide p { color: rgba(255,255,255,0.9); }
+
+    .ai-card {
+      background: #fff;
+      border: 1px solid #E8E2D9;
+      border-radius: 10px;
+      padding: 20px 24px;
+      margin-bottom: 12px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    }
+
+    .ai-card-name {
+      font-weight: 900;
+      font-size: 1.1rem;
+      color: #2C2416;
+      margin-bottom: 4px;
+    }
+
+    .ai-card-company {
+      font-size: 0.8rem;
+      color: #2B8C7E;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .ai-card-desc {
+      font-size: 0.88rem;
+      color: #5C4F3D;
+      line-height: 1.7;
+    }
+
+    .model-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      font-size: clamp(0.8rem, 1.3vw, 0.9rem);
+    }
+
+    .model-table th {
+      text-align: left;
+      padding: 10px 14px;
+      background: rgba(43,140,126,0.08);
+      color: #2B8C7E;
+      font-weight: 700;
+      font-size: 0.78rem;
+      letter-spacing: 0.05em;
+    }
+
+    .model-table td {
+      padding: 10px 14px;
+      border-bottom: 1px solid #E8E2D9;
+      color: #5C4F3D;
+      line-height: 1.6;
+    }
+
+    .model-table tr:last-child td { border-bottom: none; }
+
+    @media (max-width: 600px) {
+      .slide { padding: 24px 20px 80px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="progress" id="progress"></div>
+
+<div class="slides" id="slides">
+
+  <!-- Slide 1: タイトル -->
+  <div class="slide title-slide active">
+    <div class="slide-inner">
+      <span class="label">AI TIPS WEEKLY vol.3</span>
+      <h1>ChatGPT・Gemini・Claude<br><span class="accent">「そもそもこれ何?」</span>がわかる10分</h1>
+      <p>3つのAIサービスの違い、「モデル」の意味、事務所での始め方がわかります。</p>
+      <p style="margin-top:32px; font-size:0.85rem; color:#8C7B6B;">&larr; &rarr; キーまたはクリックで進む</p>
+    </div>
+  </div>
+
+  <!-- Slide 2: つかみ -->
+  <div class="slide">
+    <div class="slide-inner">
+      <h2>こんなこと、<span class="accent">思ったことありませんか?</span></h2>
+      <ul class="point-list">
+        <li><strong>「ChatGPTってよく聞くけど、結局なに?」</strong> — ニュースでは見るけど、自分には関係ない気がする</li>
+        <li><strong>「Geminiって何? Claudeって何?」</strong> — 名前が増えてきて混乱する</li>
+        <li><strong>「モデルって言われても…」</strong> — GPT-4oとかSonnetとか、何のことかわからない</li>
+      </ul>
+      <p>今日は<strong>「そもそもの話」</strong>をスッキリ整理します。<br>覚えることは3つだけ。難しい話はしません。</p>
+    </div>
+  </div>
+
+  <!-- Slide 3: Tips 01 - AIチャットサービスとは -->
+  <div class="slide">
+    <div class="slide-inner">
+      <div class="section-num">01</div>
+      <h2>AIチャットサービス = <span class="accent">賢い相談相手</span></h2>
+      <p>ChatGPT・Gemini・Claudeは、どれも<strong>「AIチャットサービス」</strong>と呼ばれるものです。</p>
+      <p>文章で質問すると、AIが文章で答えてくれます。<br>検索エンジンと違って、<strong>「こういう風に書いて」「要約して」「下書きして」</strong>といった<br>お願いごとに応えてくれるのが特徴です。</p>
+      <div class="callout">
+        <div class="callout-title">イメージ</div>
+        <p>メールの相手が超物知りで、何を聞いても即レスしてくれる — そんな感覚です。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 4: 3つのサービス紹介 -->
+  <div class="slide">
+    <div class="slide-inner">
+      <h2>3大AIサービスを<span class="accent">知ろう</span></h2>
+
+      <div class="ai-card">
+        <div class="ai-card-name">ChatGPT</div>
+        <div class="ai-card-company">OpenAI 社（アメリカのAI専門企業）</div>
+        <div class="ai-card-desc">一番有名。文章作成・翻訳・画像生成など、できることの幅が広い</div>
+      </div>
+
+      <div class="ai-card">
+        <div class="ai-card-name">Gemini</div>
+        <div class="ai-card-company">Google（Googleが作ったAI）</div>
+        <div class="ai-card-desc">Gmail・スプレッドシートなどGoogle製品との連携が強み</div>
+      </div>
+
+      <div class="ai-card">
+        <div class="ai-card-name">Claude</div>
+        <div class="ai-card-company">Anthropic 社（アメリカのAI安全研究企業）</div>
+        <div class="ai-card-desc">長い文章の理解や丁寧な回答が得意。安全性を重視した設計</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 5: Tips 02 - モデルとは -->
+  <div class="slide">
+    <div class="slide-inner">
+      <div class="section-num">02</div>
+      <h2>「モデル」って<span class="accent">何のこと?</span></h2>
+      <p><strong>モデル = AIの「頭脳のバージョン」</strong>のことです。</p>
+      <p>車に例えると、こうなります:</p>
+      <div class="compare">
+        <div class="compare-box before">
+          <div class="compare-label">サービス名 = メーカー</div>
+          ChatGPT → トヨタ<br>
+          Gemini → ホンダ<br>
+          Claude → 日産
+        </div>
+        <div class="compare-box after">
+          <div class="compare-label">モデル = 車種</div>
+          GPT-4o → カローラ<br>
+          Gemini 2.5 → フィット<br>
+          Claude Sonnet → ノート
+        </div>
+      </div>
+      <p>新しいモデルが出るたびに<strong>より賢く、より速く</strong>なります。<br>車が毎年モデルチェンジするのと同じです。</p>
+    </div>
+  </div>
+
+  <!-- Slide 6: 主なモデル一覧 -->
+  <div class="slide">
+    <div class="slide-inner">
+      <h2>主なモデルの<span class="accent">名前だけ</span>知っておこう</h2>
+      <table class="model-table">
+        <tr>
+          <th>サービス</th>
+          <th>主なモデル名</th>
+          <th>ひとこと</th>
+        </tr>
+        <tr>
+          <td><strong>ChatGPT</strong></td>
+          <td>GPT-4o、o3</td>
+          <td>4oが標準、o3は深く考える用</td>
+        </tr>
+        <tr>
+          <td><strong>Gemini</strong></td>
+          <td>Gemini 2.5 Pro、Flash</td>
+          <td>Proが高性能、Flashは軽量で速い</td>
+        </tr>
+        <tr>
+          <td><strong>Claude</strong></td>
+          <td>Sonnet、Opus、Haiku</td>
+          <td>Sonnetが標準、Opusが最高性能</td>
+        </tr>
+      </table>
+      <div class="callout">
+        <div class="callout-title">覚えなくて大丈夫!</div>
+        <p>普通に使う分には、サービスが自動で適切なモデルを選んでくれます。<br>「こういう名前があるんだな」くらいでOKです。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 7: Tips 03 - 始め方 -->
+  <div class="slide">
+    <div class="slide-inner">
+      <div class="section-num">03</div>
+      <h2>事務所で<span class="accent">使い始めるには</span></h2>
+      <p>3つとも<strong>月額約3,000円</strong>の有料プランで十分使えます。</p>
+      <ul class="point-list">
+        <li><strong>ChatGPT Plus</strong>（月$20 ≒ 約3,000円） — まず試すならここから。利用者が多く、困ったとき情報が見つけやすい</li>
+        <li><strong>Gemini Advanced</strong>（月2,900円） — Googleアカウントがあればすぐ。Gmailと一緒に使いたい人向け</li>
+        <li><strong>Claude Pro</strong>（月$20 ≒ 約3,000円） — 長い文章を読ませたい・丁寧な回答がほしい人向け</li>
+      </ul>
+      <div class="callout">
+        <div class="callout-title">まずは無料でOK</div>
+        <p>3つとも無料でも試せます（回数や機能に制限あり）。<br>まずは無料で触ってみて、気に入ったら有料にするのがおすすめです。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 8: 注意点 -->
+  <div class="slide">
+    <div class="slide-inner">
+      <span class="label">大事な注意点</span>
+      <h2>AIを使うとき<span class="accent">気をつけること</span></h2>
+      <div class="callout warn">
+        <div class="callout-title">AIは「もっともらしいウソ」をつくことがある</div>
+        <p>AIが自信たっぷりに答えても、内容が間違っていることがあります。<br>これを<strong>「ハルシネーション（幻覚）」</strong>と言います。<br>特に税法の数字・期限・要件は、<strong>必ず原典（法令・通達）で確認</strong>してください。</p>
+      </div>
+      <div class="callout warn">
+        <div class="callout-title">顧問先の情報をそのまま入れない</div>
+        <p>顧問先名・個人名・具体的な金額など、<strong>機密情報はそのままAIに入力しない</strong>でください。<br>「A社」「B氏」のように匿名化するか、架空の数字に置き換えて質問しましょう。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 9: プロンプト集 表紙 -->
+  <div class="slide">
+    <div class="slide-inner" style="text-align:center;">
+      <span class="label">APPENDIX</span>
+      <h1><span class="accent">はじめの一歩</span><br>プロンプト集</h1>
+      <p>「プロンプト」= AIへのお願い文のこと。<br>カードをクリックするとコピーできます。<br>ChatGPT・Gemini・Claude、どれに貼っても使えます。</p>
+    </div>
+  </div>
+
+  <!-- Slide 10: プロンプト集 カード -->
+  <div class="slide">
+    <div class="slide-inner">
+      <h2 style="font-size:1.2rem; margin-bottom:20px;">プロンプト集 — <span class="accent">初めてのAI会話</span></h2>
+
+      <div class="prompt-card" onclick="copyPrompt(this)">
+        <button class="copy-btn">コピー</button>
+        <div class="prompt-card-title">自己紹介がてら、AIの実力を試す</div>
+        <div class="prompt-text">私は税理士事務所で働いています。普段の仕事は記帳・決算・申告と、顧問先との面談やメール対応です。こんな私の仕事で、あなた（AI）が手伝えることを5つ、具体的に教えてください。</div>
+      </div>
+
+      <div class="prompt-card" onclick="copyPrompt(this)">
+        <button class="copy-btn">コピー</button>
+        <div class="prompt-card-title">用語をやさしく言い換えてもらう</div>
+        <div class="prompt-text">以下の会計用語を、経理の経験がない顧問先の社長にもわかるように、日常の言葉で説明してください。&#10;&#10;・減価償却&#10;・損金算入&#10;・貸倒引当金</div>
+      </div>
+
+      <div class="prompt-card" onclick="copyPrompt(this)">
+        <button class="copy-btn">コピー</button>
+        <div class="prompt-card-title">簡単なメールの下書き</div>
+        <div class="prompt-text">顧問先の[業種]の[社長名/担当者名]さんに、[必要な資料の名前]の提出をお願いするメールの下書きを作ってください。丁寧だけど堅すぎない文体でお願いします。期限は[◯月◯日]です。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 11: 今週の宿題 -->
+  <div class="slide">
+    <div class="slide-inner">
+      <span class="label">今週の宿題</span>
+      <h2>ChatGPT・Gemini・Claudeの<br><span class="accent">どれか1つ</span>を開いて話しかけてみよう</h2>
+      <p>上のプロンプト集の1つ目をコピーして貼り付けるだけでOKです。</p>
+      <p>どれを使うか迷ったら、まずは<strong>ChatGPT</strong>（chat.openai.com）がおすすめ。<br>Googleアカウントだけで無料で始められます。</p>
+      <div class="callout">
+        <div class="callout-title">来週聞きます!</div>
+        <p>「どのAIを使った?」「どんな返事が返ってきた?」を教えてください。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 12: エンド -->
+  <div class="slide end-slide">
+    <div class="slide-inner" style="text-align:center;">
+      <h2 style="font-size:clamp(1.6rem, 4vw, 2.4rem); margin-bottom:16px;">まずは1回、話しかけてみる。<br>それだけでいい。</h2>
+      <p style="color:rgba(255,255,255,0.9);">「使いこなす」はその先の話。<br>今日は「知ってる」を「触ったことある」に変えましょう。</p>
+      <p style="margin-top:32px; font-size:0.85rem; color:rgba(255,255,255,0.7);">AI Tips Weekly vol.3 AI基本ガイド編 | 2026年7月</p>
+    </div>
+  </div>
+
+</div>
+
+<div class="nav">
+  <button class="nav-btn" id="prevBtn" aria-label="前へ">&#8592;</button>
+  <span class="nav-counter" id="counter">1 / 12</span>
+  <button class="nav-btn" id="nextBtn" aria-label="次へ">&#8594;</button>
+</div>
+
+<script>
+  (function() {
+    var slides = document.querySelectorAll('.slide');
+    var counter = document.getElementById('counter');
+    var progress = document.getElementById('progress');
+    var prevBtn = document.getElementById('prevBtn');
+    var nextBtn = document.getElementById('nextBtn');
+    var current = 0;
+
+    function showSlide(index) {
+      for (var i = 0; i < slides.length; i++) {
+        slides[i].classList.remove('active');
+        slides[i].style.transform = i < index ? 'translateX(-40px)' : 'translateX(40px)';
+      }
+      slides[index].classList.add('active');
+      slides[index].style.transform = 'translateX(0)';
+      counter.textContent = (index + 1) + ' / ' + slides.length;
+      progress.style.width = ((index + 1) / slides.length * 100) + '%';
+    }
+
+    function changeSlide(dir) {
+      var next = current + dir;
+      if (next < 0 || next >= slides.length) return;
+      current = next;
+      showSlide(current);
+    }
+
+    prevBtn.addEventListener('click', function(e) { e.preventDefault(); e.stopPropagation(); changeSlide(-1); });
+    nextBtn.addEventListener('click', function(e) { e.preventDefault(); e.stopPropagation(); changeSlide(1); });
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') {
+        e.preventDefault();
+        changeSlide(1);
+      }
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        changeSlide(-1);
+      }
+    });
+
+    document.getElementById('slides').addEventListener('click', function(e) {
+      if (e.target.closest('.prompt-card') || e.target.closest('.copy-btn') || e.target.closest('a')) return;
+      var x = e.clientX;
+      var w = window.innerWidth;
+      if (x > w * 0.5) {
+        changeSlide(1);
+      } else {
+        changeSlide(-1);
+      }
+    });
+
+    var touchStartX = 0;
+    document.addEventListener('touchstart', function(e) { touchStartX = e.touches[0].clientX; });
+    document.addEventListener('touchend', function(e) {
+      var diff = touchStartX - e.changedTouches[0].clientX;
+      if (Math.abs(diff) > 50) changeSlide(diff > 0 ? 1 : -1);
+    });
+
+    window.copyPrompt = function(card) {
+      var text = card.querySelector('.prompt-text').textContent;
+      navigator.clipboard.writeText(text).then(function() {
+        var btn = card.querySelector('.copy-btn');
+        btn.textContent = 'OK!';
+        btn.classList.add('copied');
+        setTimeout(function() { btn.textContent = 'コピー'; btn.classList.remove('copied'); }, 1500);
+      });
+    };
+
+    showSlide(0);
+  })();
+</script>
+
+</body>
+</html>
