@@ -27,7 +27,7 @@
 | `index.html` | バックナンバー一覧(GitHub Pagesのトップページ) |
 | `vols/vol1.html` 〜 | 各回のスライド本体 |
 | `template/slide-template.html` | 新しい回の雛形(直接使うことはない) |
-| `topics.md` | ネタ帳。1年分以上のトピック案と消化状況 |
+| `topics.md` | ネタ帳。ジャンル×難易度で並んだ60個以上のトピックカタログと消化状況。毎週ここから選ぶ |
 | `CLAUDE.md` | Claudeへの作業指示書(スライドの型・品質ルール) |
 
 ## GitHub Pages の設定(最初に1回だけ)
