@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AIエージェント入門 — レシートの山がCSVになって返ってくる - AI Tips Weekly vol.4</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      font-family: "Noto Sans JP", -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #FDFAF6;
+      color: #2C2416;
+    }
+
+    .slides {
+      height: 100vh;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 48px;
+      opacity: 0;
+      transform: translateX(40px);
+      transition: opacity 0.4s, transform 0.4s;
+      pointer-events: none;
+    }
+
+    .slide.active {
+      opacity: 1;
+      transform: translateX(0);
+      pointer-events: auto;
+    }
+
+    .slide-inner {
+      max-width: 860px;
+      width: 100%;
+    }
+
+    .nav {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      z-index: 100;
+    }
+
+    .nav-btn {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      border: 2px solid #2B8C7E;
+      background: #fff;
+      color: #2B8C7E;
+      font-size: 1.3rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    .nav-btn:hover, .nav-btn:active { background: #2B8C7E; color: #fff; }
+
+    .nav-counter {
+      font-size: 0.8rem;
+      color: #8C7B6B;
+      min-width: 60px;
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .progress {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 3px;
+      background: #2B8C7E;
+      transition: width 0.4s;
+      z-index: 100;
+    }
+
+    .slide h1 {
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 900;
+      line-height: 1.3;
+      margin-bottom: 20px;
+      color: #2C2416;
+    }
+
+    .slide h2 {
+      font-size: clamp(1.4rem, 3.5vw, 2rem);
+      font-weight: 900;
+      line-height: 1.4;
+      margin-bottom: 24px;
+      color: #2C2416;
+    }
+
+    .slide p {
+      font-size: clamp(0.95rem, 1.8vw, 1.15rem);
+      line-height: 1.9;
+      color: #5C4F3D;
+      margin-bottom: 16px;
+    }
+
+    .slide p strong { color: #2C2416; }
+
+    .accent { color: #2B8C7E; }
+
+    .section-num {
+      font-size: clamp(3rem, 8vw, 5rem);
+      font-weight: 900;
+      color: rgba(43,140,126,0.08);
+      line-height: 1;
+      margin-bottom: -12px;
+    }
+
+    .label {
+      display: inline-block;
+      border: 1px solid #2B8C7E;
+      color: #2B8C7E;
+      padding: 4px 14px;
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      margin-bottom: 24px;
+      border-radius: 4px;
+    }
+
+    .point-list {
+      list-style: none;
+      margin: 20px 0;
+    }
+
+    .point-list li {
+      padding: 10px 0 10px 24px;
+      position: relative;
+      color: #5C4F3D;
+      font-size: clamp(0.9rem, 1.6vw, 1.05rem);
+      line-height: 1.7;
+    }
+
+    .point-list li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 18px;
+      width: 10px;
+      height: 3px;
+      background: #2B8C7E;
+    }
+
+    .point-list li strong { color: #2C2416; }
+
+    .compare {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin: 24px 0;
+    }
+
+    @media (max-width: 700px) {
+      .compare { grid-template-columns: 1fr; gap: 12px; }
+    }
+
+    .compare-box {
+      padding: 24px;
+      border-radius: 10px;
+      font-size: clamp(0.85rem, 1.4vw, 0.95rem);
+      line-height: 1.8;
+      color: #2C2416;
+    }
+
+    .compare-box.before { background: #F0ECE6; }
+    .compare-box.after { background: #D4EDDA; }
+
+    .compare-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      margin-bottom: 10px;
+      color: #8C7B6B;
+    }
+
+    .compare-box.after .compare-label { color: #2B8C7E; }
+
+    .callout {
+      border-left: 3px solid #2B8C7E;
+      padding: 16px 20px;
+      margin: 20px 0;
+      background: rgba(43,140,126,0.06);
+      border-radius: 0 8px 8px 0;
+    }
+
+    .callout-title {
+      font-weight: 700;
+      font-size: 0.8rem;
+      color: #2B8C7E;
+      margin-bottom: 4px;
+      letter-spacing: 0.05em;
+    }
+
+    .callout p { margin-bottom: 0; }
+
+    .callout.warn { border-left-color: #D4644A; background: rgba(212,100,74,0.06); }
+    .callout.warn .callout-title { color: #D4644A; }
+
+    .prompt-card {
+      background: #fff;
+      border: 1px solid #E8E2D9;
+      border-radius: 10px;
+      padding: 20px 24px;
+      margin-bottom: 14px;
+      position: relative;
+      cursor: pointer;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    }
+
+    .prompt-card:hover { border-color: #2B8C7E; box-shadow: 0 2px 12px rgba(43,140,126,0.1); }
+
+    .prompt-card .prompt-card-title {
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: #2B8C7E;
+      margin-bottom: 6px;
+    }
+
+    .prompt-card .prompt-text {
+      font-size: clamp(0.8rem, 1.3vw, 0.9rem);
+      color: #5C4F3D;
+      line-height: 1.7;
+      white-space: pre-line;
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: #F0ECE6;
+      border: none;
+      color: #8C7B6B;
+      font-size: 0.7rem;
+      padding: 4px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .copy-btn:hover { background: #2B8C7E; color: #fff; }
+    .copy-btn.copied { background: #2B8C7E; color: #fff; }
+
+    .slide.title-slide .slide-inner {
+      max-width: 760px;
+    }
+
+    .slide.end-slide {
+      background: #2B8C7E;
+    }
+
+    .slide.end-slide h2 { color: #fff; }
+    .slide.end-slide p { color: rgba(255,255,255,0.9); }
+
+    @media (max-width: 600px) {
+      .slide { padding: 24px 20px 80px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="progress" id="progress"></div>
+
+<div class="slides" id="slides">
+
+  <!-- 1. タイトル -->
+  <div class="slide title-slide active">
+    <div class="slide-inner">
+      <span class="label">AI TIPS WEEKLY vol.4</span>
+      <h1>レシートの山が、<br><span class="accent">CSVになって返ってくる</span></h1>
+      <p>今月ChatGPTに入った新機能「Work」で、AIは「答える」から「仕事を仕上げる」へ。今日は目の前で実演します。</p>
+      <p style="margin-top:32px; font-size:0.85rem; color:#8C7B6B;">← → キーまたはクリックで進む</p>
+    </div>
+  </div>
+
+  <!-- 2. つかみ -->
+  <div class="slide">
+    <div class="slide-inner">
+      <h2>レシート・領収書の入力、<span class="accent">「作業」になってませんか?</span></h2>
+      <p>1枚30秒でも、山になれば午後がまるごと消えます。</p>
+      <ul class="point-list">
+        <li><strong>手入力の間、本来の仕事が止まる</strong> — 確認・相談・顧問先対応</li>
+        <li><strong>AIに「聞く」ことはできるようになった</strong> — でも「やってもらう」はまだ</li>
+        <li><strong>そこが先週、大きく変わりました</strong> — 今日はその新機能の話と実演です</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 3. Tips01 エージェントとは -->
+  <div class="slide">
+    <div class="slide-inner">
+      <div class="section-num">01</div>
+      <h2>AIエージェント = <span class="accent">ゴールを渡すと、仕上げてくるAI</span></h2>
+      <p>これまでのチャットは1問1答。<strong>エージェント</strong>(自分で段取りを立てて作業を進めるAI)は、ゴールを渡すと途中の手順を自分で考えて、<strong>完成物</strong>で返してきます。</p>
+      <div class="compare">
+        <div class="compare-box before">
+          <div class="compare-label">BEFORE — 答えてもらう</div>
+          「この費目は何になりますか?」と聞く → 答えを読む → 自分で表に打ち込む → また聞く…の繰り返し。
+        </div>
+        <div class="compare-box after">
+          <div class="compare-label">AFTER — 仕上げてもらう</div>
+          「このレシートの束からCSVを作って」→ 読み取り・整理・表づくりまで進めて、<strong>ファイルで返ってくる</strong>。
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Tips02 ChatGPT Workとは -->
+  <div class="slide">
+    <div class="slide-inner">
+      <div class="section-num">02</div>
+      <h2>ChatGPT Work — <span class="accent">今月出たばかりの「任せる」機能</span></h2>
+      <ul class="point-list">
+        <li><strong>2026年7月9日にOpenAIが発表</strong>した、ChatGPTの中のエージェント機能</li>
+        <li>ゴールを渡すと、<strong>数分〜長いときは数時間</strong>、自分で作業を続ける</li>
+        <li>返ってくるのは会話ではなく<strong>完成物</strong> — 表・文書・スライドなど</li>
+      </ul>
+      <div class="callout">
+        <div class="callout-title">使えるかどうか</div>
+        <p>追加料金なしで、有料プランに順次展開中です。自分の画面に来ているかは今日の宿題で確認します(提供状況・画面は変わるので、利用時に公式の表示で確認)。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. 事務所での渡し方の例 -->
+  <div class="slide">
+    <div class="slide-inner">
+      <h2>事務所の仕事だと、<span class="accent">例えばこんな渡し方</span></h2>
+      <ul class="point-list">
+        <li><strong>レシートの束</strong> → 仕訳の下ごしらえCSV(今日の実演)</li>
+        <li><strong>複数の資料PDF</strong> → 「去年と変わった点」の比較表</li>
+        <li><strong>面談の文字起こし</strong> → 議事録+お礼メール+宿題リストの3点セット</li>
+      </ul>
+      <p>コツは<strong>「完成物の形」まで指定して渡す</strong>こと。AIが働いている間、自分は別の仕事ができます。</p>
+    </div>
+  </div>
+
+  <!-- 6. 実演 -->
+  <div class="slide">
+    <div class="slide-inner">
+      <span class="label">今日の実演</span>
+      <h2>レシート → 仕訳の下ごしらえCSV、<span class="accent">目の前でやります</span></h2>
+      <ul class="point-list">
+        <li><strong>① レシート画像を渡す</strong>(今日は私物のレシートです)</li>
+        <li><strong>② ゴールを指示する</strong> — 列の形・「不明は要確認と書く」・検算用の合計行</li>
+        <li><strong>③ 出てきたCSVを一緒に検算する</strong> — 実はここが一番大事</li>
+      </ul>
+      <div class="callout warn">
+        <div class="callout-title">練習は自分のレシートで</div>
+        <p>レシートも顧問先の情報です。実データを渡すのは、事務所のルールと学習オフ設定を確認してから。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. Tips03 デスクトップアプリとの違い -->
+  <div class="slide">
+    <div class="slide-inner">
+      <div class="section-num">03</div>
+      <h2>「Codexアプリ」はどこへ? — <span class="accent">デスクトップ版との違い</span></h2>
+      <p>PCに入れるデスクトップアプリは、Codexアプリと統合されて<strong>1つのChatGPTアプリ</strong>になりました。同じエージェントでも「働く場所」が違います。</p>
+      <div class="compare">
+        <div class="compare-box before">
+          <div class="compare-label">デスクトップアプリ(Codex統合)</div>
+          PCの中のフォルダやアプリまで直接触って働ける。強力なぶん、<strong>触らせる範囲の設定</strong>が大事。
+        </div>
+        <div class="compare-box after">
+          <div class="compare-label">ブラウザ/スマホの Work — まずはこっち</div>
+          自分が渡したファイルの範囲で働く。手軽で、<strong>安全側から始められる</strong>。
+        </div>
+      </div>
+      <p style="font-size:0.9rem;">覚えるのは1つだけ: <strong>「PCの中まで任せたくなったらデスクトップ版」</strong>。今日はブラウザのWorkだけでOKです。</p>
+    </div>
+  </div>
+
+  <!-- 8. 注意点 安全の3つの約束 -->
+  <div class="slide">
+    <div class="slide-inner">
+      <span class="label">大事な注意点</span>
+      <h2>自分で動くAIには、<span class="accent">3つの約束</span></h2>
+      <ul class="point-list">
+        <li><strong>① ダミーで練習してから実データ</strong> — 顧問先情報は、学習オフ設定+事務所ルールの範囲で</li>
+        <li><strong>② 任せても、最終判断は人</strong> — 勘定科目・税区分の確定はプロの仕事。AIの出力は「候補」と「下ごしらえ」まで</li>
+        <li><strong>③ 触らせる範囲は最小限</strong> — 渡すファイル・接続するアプリは必要な分だけ</li>
+      </ul>
+      <div class="callout warn">
+        <div class="callout-title">便利なほど起きやすい事故</div>
+        <p>エージェントは楽なぶん「確認せずにそのまま使う」事故が起きやすくなります。数字・日付・科目は必ず人の目で検算を。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 9. プロンプト集表紙 -->
+  <div class="slide">
+    <div class="slide-inner" style="text-align:center;">
+      <span class="label">APPENDIX</span>
+      <h1><span class="accent">コピペで使える</span><br>プロンプト集</h1>
+      <p>カードをクリックするとクリップボードにコピーされます。<br>[ ]の中を自分の状況に書き換えて、AIに貼り付けて使ってください。</p>
+    </div>
+  </div>
+
+  <!-- 10. プロンプトカード -->
+  <div class="slide">
+    <div class="slide-inner">
+      <h2 style="font-size:1.2rem; margin-bottom:20px;">プロンプト集 — <span class="accent">エージェントに任せる</span></h2>
+
+      <div class="prompt-card" onclick="copyPrompt(this)">
+        <button class="copy-btn">コピー</button>
+        <div class="prompt-card-title">レシート → 仕訳の下ごしらえCSV(実演で使ったもの)</div>
+        <div class="prompt-text">添付したレシート画像から、会計ソフトに取り込む前の「下ごしらえ用CSV」を作ってください。
+
+列: 日付 / 金額(税込) / 支払先 / 摘要 / 勘定科目の候補 / 要確認メモ
+
+ルール:
+・読み取りに自信がない箇所は推測せず「要確認」と書く
+・勘定科目は候補にとどめ、断定しない
+・最後に件数と金額合計の行を付ける(検算用)
+・CSVファイルとしてダウンロードできる形にする</div>
+      </div>
+
+      <div class="prompt-card" onclick="copyPrompt(this)">
+        <button class="copy-btn">コピー</button>
+        <div class="prompt-card-title">エージェントへの頼み方の型(何にでも使える)</div>
+        <div class="prompt-text">【ゴール】[最終的に欲しい完成物。例: 顧問先向けの説明資料1枚]
+【材料】[渡すファイルや情報]
+【完成物の形】[ファイル形式・列・枚数など]
+【ルール】不明点は推測せず「要確認」として一覧にする。大きな判断が必要になったら、進める前に私に確認する。</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 11. 今週の宿題 -->
+  <div class="slide">
+    <div class="slide-inner">
+      <span class="label">今週の宿題</span>
+      <h2>自分の画面に「Work」が<span class="accent">来ているか見るだけ</span></h2>
+      <p>ChatGPTを開いて、エージェント(Work)が使えるようになっているか確認してください。来ていたら、<strong>自分のレシート1枚</strong>で今日のプロンプトを試してみる。ここまでで5分です。</p>
+      <p><strong>顧問先のレシートでは試さないこと。</strong>来週、「来てた? 動いた?」を教えてください。</p>
+    </div>
+  </div>
+
+  <!-- 12. エンド -->
+  <div class="slide end-slide">
+    <div class="slide-inner" style="text-align:center;">
+      <h2 style="font-size:clamp(1.6rem, 4vw, 2.4rem); margin-bottom:16px;">「聞くAI」から、「任せるAI」へ。</h2>
+      <p style="color:rgba(255,255,255,0.9);">最初の一件は小さくていい。今日のレシート1枚から。</p>
+      <p style="margin-top:32px; font-size:0.85rem; color:rgba(255,255,255,0.7);">AI Tips Weekly vol.4 AIエージェント編 | 2026年7月</p>
+    </div>
+  </div>
+
+</div>
+
+<div class="nav">
+  <button class="nav-btn" id="prevBtn" aria-label="前へ">&#8592;</button>
+  <span class="nav-counter" id="counter">1 / 12</span>
+  <button class="nav-btn" id="nextBtn" aria-label="次へ">&#8594;</button>
+</div>
+
+<script>
+  (function() {
+    var slides = document.querySelectorAll('.slide');
+    var counter = document.getElementById('counter');
+    var progress = document.getElementById('progress');
+    var prevBtn = document.getElementById('prevBtn');
+    var nextBtn = document.getElementById('nextBtn');
+    var current = 0;
+
+    function showSlide(index) {
+      for (var i = 0; i < slides.length; i++) {
+        slides[i].classList.remove('active');
+        slides[i].style.transform = i < index ? 'translateX(-40px)' : 'translateX(40px)';
+      }
+      slides[index].classList.add('active');
+      slides[index].style.transform = 'translateX(0)';
+      counter.textContent = (index + 1) + ' / ' + slides.length;
+      progress.style.width = ((index + 1) / slides.length * 100) + '%';
+    }
+
+    function changeSlide(dir) {
+      var next = current + dir;
+      if (next < 0 || next >= slides.length) return;
+      current = next;
+      showSlide(current);
+    }
+
+    prevBtn.addEventListener('click', function(e) { e.preventDefault(); e.stopPropagation(); changeSlide(-1); });
+    nextBtn.addEventListener('click', function(e) { e.preventDefault(); e.stopPropagation(); changeSlide(1); });
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') {
+        e.preventDefault();
+        changeSlide(1);
+      }
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        changeSlide(-1);
+      }
+    });
+
+    document.getElementById('slides').addEventListener('click', function(e) {
+      if (e.target.closest('.prompt-card') || e.target.closest('.copy-btn') || e.target.closest('a')) return;
+      var x = e.clientX;
+      var w = window.innerWidth;
+      if (x > w * 0.5) {
+        changeSlide(1);
+      } else {
+        changeSlide(-1);
+      }
+    });
+
+    var touchStartX = 0;
+    document.addEventListener('touchstart', function(e) { touchStartX = e.touches[0].clientX; });
+    document.addEventListener('touchend', function(e) {
+      var diff = touchStartX - e.changedTouches[0].clientX;
+      if (Math.abs(diff) > 50) changeSlide(diff > 0 ? 1 : -1);
+    });
+
+    window.copyPrompt = function(card) {
+      var text = card.querySelector('.prompt-text').textContent;
+      navigator.clipboard.writeText(text).then(function() {
+        var btn = card.querySelector('.copy-btn');
+        btn.textContent = 'OK!';
+        btn.classList.add('copied');
+        setTimeout(function() { btn.textContent = 'コピー'; btn.classList.remove('copied'); }, 1500);
+      });
+    };
+
+    showSlide(0);
+  })();
+</script>
+
+</body>
+</html>
