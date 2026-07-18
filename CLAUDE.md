@@ -20,7 +20,7 @@ index.html                  … ポータル(バックナンバー一覧)。GitH
 vols/volN.html              … 各回のスライド(自己完結の単一HTML)
 template/slide-template.html … 新しい回のベース。ここからコピーして作る
 topics.md                   … ネタ帳(トピックカタログ)。ジャンル×難易度で選べる一覧と消化状況
-README.md                   … 人間向けの運用手順
+README.md                   … 公開ページURLの案内のみ(運用ルールはこのCLAUDE.mdに集約)
 ```
 
 ## 毎週の作成手順(「今週の分を作って」と言われたら)
