@@ -266,14 +266,9 @@
     .copy-btn:hover { background: #2B8C7E; color: #fff; }
     .copy-btn.copied { background: #2B8C7E; color: #fff; }
 
-    .slide.title-slide .slide-inner {
-      max-width: 800px;
-    }
+    .slide.title-slide .slide-inner { max-width: 800px; }
 
-    .slide.end-slide {
-      background: #2B8C7E;
-    }
-
+    .slide.end-slide { background: #2B8C7E; }
     .slide.end-slide h2 { color: #fff; }
     .slide.end-slide p { color: rgba(255,255,255,0.9); }
 
@@ -442,7 +437,30 @@
     </div>
   </div>
 
-  <!-- 10. 安全 -->
+  <!-- 10. WorkとCodex・安全性 -->
+  <div class="slide">
+    <div class="slide-inner">
+      <span class="label">よくある不安</span>
+      <h2>「AIエージェントって、<span class="accent">PCを勝手に触るの?</span>」</h2>
+      <div class="compare">
+        <div class="compare-box after">
+          <div class="compare-label">WEB・モバイルの WORK</div>
+          OpenAIの<strong>クラウド環境</strong>で動く。PC内のファイルやアプリには直接アクセスできず、添付した資料・許可した接続・クラウドブラウザの範囲で作業する。
+        </div>
+        <div class="compare-box before">
+          <div class="compare-label">CODEX / ローカルの WORK</div>
+          Codexはソフトウェア開発向け。許可したフォルダ・リポジトリ・ターミナルなどを使う。デスクトップ版Workも、許可した場合はローカルファイルやアプリを利用できる。
+        </div>
+      </div>
+      <div class="callout">
+        <div class="callout-title">怖さは「名前」ではなく「アクセス範囲」で決まる</div>
+        <p><strong>Web版WorkはPC側のマルウェアや勝手なローカル操作には比較的強い。</strong>ただし、Web閲覧やアプリ連携を許可すれば外部送信の経路は生まれるため、情報流出リスクがゼロになるわけではありません。</p>
+      </div>
+      <p style="font-size:0.78rem; color:#8C7B6B;">※2026年8月時点。提供画面・権限はプランや設定で異なります。</p>
+    </div>
+  </div>
+
+  <!-- 11. 安全 -->
   <div class="slide">
     <div class="slide-inner">
       <span class="label">大事な注意点</span>
@@ -459,7 +477,7 @@
     </div>
   </div>
 
-  <!-- 11. プロンプト集 -->
+  <!-- 12. プロンプト集 -->
   <div class="slide">
     <div class="slide-inner">
       <h2 style="font-size:1.2rem; margin-bottom:16px;">コピペで使える — <span class="accent">Chat版とWork版</span></h2>
@@ -485,11 +503,11 @@
     </div>
   </div>
 
-  <!-- 12. エンド -->
+  <!-- 13. エンド -->
   <div class="slide end-slide">
     <div class="slide-inner" style="text-align:center;">
       <h2 style="font-size:clamp(1.6rem, 4vw, 2.4rem); margin-bottom:16px;">Chatは、ひとつの作業を一緒に。<br>Workは、仕事のまとまりを任せる。</h2>
-      <p>まずは小さな仕事で、「どこまで任せるか」を試してみる。</p>
+      <p>まずはWeb版で、許可する範囲を小さくして試してみる。</p>
       <p style="margin-top:32px; font-size:0.85rem; color:rgba(255,255,255,0.7);">AI Tips Weekly vol.4 | ChatとWorkの違い</p>
     </div>
   </div>
@@ -498,7 +516,7 @@
 
 <div class="nav">
   <button class="nav-btn" id="prevBtn" aria-label="前へ">&#8592;</button>
-  <span class="nav-counter" id="counter">1 / 12</span>
+  <span class="nav-counter" id="counter">1 / 13</span>
   <button class="nav-btn" id="nextBtn" aria-label="次へ">&#8594;</button>
 </div>
 
