@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AIエージェント入門 — レシートの山がCSVになって返ってくる - AI Tips Weekly vol.4</title>
+  <title>ChatとWorkの違い — AIエージェント入門 - AI Tips Weekly vol.4</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap');
 
@@ -224,8 +224,8 @@
       background: #fff;
       border: 1px solid #E8E2D9;
       border-radius: 10px;
-      padding: 20px 24px;
-      margin-bottom: 14px;
+      padding: 18px 22px;
+      margin-bottom: 12px;
       position: relative;
       cursor: pointer;
       transition: border-color 0.15s, box-shadow 0.15s;
@@ -242,10 +242,11 @@
     }
 
     .prompt-card .prompt-text {
-      font-size: clamp(0.8rem, 1.3vw, 0.9rem);
+      font-size: clamp(0.72rem, 1.15vw, 0.84rem);
       color: #5C4F3D;
-      line-height: 1.7;
+      line-height: 1.55;
       white-space: pre-line;
+      padding-right: 56px;
     }
 
     .copy-btn {
@@ -266,7 +267,7 @@
     .copy-btn.copied { background: #2B8C7E; color: #fff; }
 
     .slide.title-slide .slide-inner {
-      max-width: 760px;
+      max-width: 800px;
     }
 
     .slide.end-slide {
@@ -291,201 +292,224 @@
   <div class="slide title-slide active">
     <div class="slide-inner">
       <span class="label">AI TIPS WEEKLY vol.4</span>
-      <h1>レシートの山が、<br><span class="accent">CSVになって返ってくる</span></h1>
-      <p>今月ChatGPTに入った新機能「Work」で、AIは「答える」から「仕事を仕上げる」へ。今日は目の前で実演します。</p>
+      <h1>Chatでもできる。<br><span class="accent">Workなら、仕事の流れごと任せられる</span></h1>
+      <p>レシート1枚のCSV化から、複数資料の照合・確認事項の整理まで。今日は違いを2つの実演で見比べます。</p>
       <p style="margin-top:32px; font-size:0.85rem; color:#8C7B6B;">← → キーまたはクリックで進む</p>
     </div>
   </div>
 
-  <!-- 2. つかみ -->
+  <!-- 2. 正直に言う -->
   <div class="slide">
     <div class="slide-inner">
-      <h2>レシート・領収書の入力、<span class="accent">「作業」になってませんか?</span></h2>
-      <p>1枚30秒でも、山になれば午後がまるごと消えます。</p>
+      <span class="label">最初に、正直に</span>
+      <h2>レシートをCSVにするだけなら、<span class="accent">普通のChatでもできます</span></h2>
       <ul class="point-list">
-        <li><strong>手入力の間、本来の仕事が止まる</strong> — 確認・相談・顧問先対応</li>
-        <li><strong>AIに「聞く」ことはできるようになった</strong> — でも「やってもらう」はまだ</li>
-        <li><strong>そこが先週、大きく変わりました</strong> — 今日はその新機能の話と実演です</li>
+        <li><strong>画像を読み取る</strong> — 日付・金額・支払先などを抽出</li>
+        <li><strong>表に整理する</strong> — 指定した列に並べる</li>
+        <li><strong>CSVを作る</strong> — ダウンロードできる形で返す</li>
       </ul>
+      <div class="callout">
+        <div class="callout-title">今日のテーマ</div>
+        <p>Workの価値は「CSVを作れること」ではありません。<strong>どこまで仕事をまとめて任せられるか</strong>です。</p>
+      </div>
     </div>
   </div>
 
-  <!-- 3. Tips01 エージェントとは -->
+  <!-- 3. Tips01 ChatとWorkの違い -->
   <div class="slide">
     <div class="slide-inner">
       <div class="section-num">01</div>
-      <h2>AIエージェント = <span class="accent">ゴールを渡すと、仕上げてくるAI</span></h2>
-      <p>これまでのチャットは1問1答。<strong>エージェント</strong>(自分で段取りを立てて作業を進めるAI)は、ゴールを渡すと途中の手順を自分で考えて、<strong>完成物</strong>で返してきます。</p>
+      <h2>ChatとWork、<span class="accent">違いはどこ?</span></h2>
       <div class="compare">
         <div class="compare-box before">
-          <div class="compare-label">BEFORE — 答えてもらう</div>
-          「この費目は何になりますか?」と聞く → 答えを読む → 自分で表に打ち込む → また聞く…の繰り返し。
+          <div class="compare-label">CHAT — ひとつの作業を一緒に進める</div>
+          質問、相談、要約、表づくりなどをその場で実行。<strong>次に何をするかは人が順番に指示する</strong>。
         </div>
         <div class="compare-box after">
-          <div class="compare-label">AFTER — 仕上げてもらう</div>
-          「このレシートの束からCSVを作って」→ 読み取り・整理・表づくりまで進めて、<strong>ファイルで返ってくる</strong>。
+          <div class="compare-label">WORK — 仕事のまとまりを任せる</div>
+          ゴール・材料・完成条件を渡すと、複数の手順を組み立て、確認しながら<strong>完成まで進める</strong>。
         </div>
+      </div>
+      <div class="callout">
+        <div class="callout-title">覚えるのはこれだけ</div>
+        <p><strong>違いは「作れるもの」ではなく、「任せられる仕事の長さと範囲」。</strong></p>
       </div>
     </div>
   </div>
 
-  <!-- 4. Tips02 ChatGPT Workとは -->
+  <!-- 4. Tips02 AIエージェントとは -->
   <div class="slide">
     <div class="slide-inner">
       <div class="section-num">02</div>
-      <h2>ChatGPT Work — <span class="accent">今月出たばかりの「任せる」機能</span></h2>
+      <h2>AIエージェント = <span class="accent">考える・道具を使う・確認するAI</span></h2>
       <ul class="point-list">
-        <li><strong>2026年7月9日にOpenAIが発表</strong>した、ChatGPTの中のエージェント機能</li>
-        <li>ゴールを渡すと、<strong>数分〜長いときは数時間</strong>、自分で作業を続ける</li>
-        <li>返ってくるのは会話ではなく<strong>完成物</strong> — 表・文書・スライドなど</li>
-      </ul>
-      <div class="callout">
-        <div class="callout-title">使えるかどうか</div>
-        <p>追加料金なしで、有料プランに順次展開中です。自分の画面に来ているかは今日の宿題で確認します(提供状況・画面は変わるので、利用時に公式の表示で確認)。</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- 5. 事務所での渡し方の例 -->
-  <div class="slide">
-    <div class="slide-inner">
-      <h2>事務所の仕事だと、<span class="accent">例えばこんな渡し方</span></h2>
-      <ul class="point-list">
-        <li><strong>レシートの束</strong> → 仕訳の下ごしらえCSV(今日の実演)</li>
-        <li><strong>複数の資料PDF</strong> → 「去年と変わった点」の比較表</li>
-        <li><strong>面談の文字起こし</strong> → 議事録+お礼メール+宿題リストの3点セット</li>
-      </ul>
-      <p>コツは<strong>「完成物の形」まで指定して渡す</strong>こと。AIが働いている間、自分は別の仕事ができます。</p>
-    </div>
-  </div>
-
-  <!-- 6. 実演 -->
-  <div class="slide">
-    <div class="slide-inner">
-      <span class="label">今日の実演</span>
-      <h2>レシート → 仕訳の下ごしらえCSV、<span class="accent">目の前でやります</span></h2>
-      <ul class="point-list">
-        <li><strong>① レシート画像を渡す</strong>(今日は私物のレシートです)</li>
-        <li><strong>② ゴールを指示する</strong> — 列の形・「不明は要確認と書く」・検算用の合計行</li>
-        <li><strong>③ 出てきたCSVを一緒に検算する</strong> — 実はここが一番大事</li>
+        <li><strong>① ゴールを理解して、作業を分ける</strong> — 何から始めるかを考える</li>
+        <li><strong>② ファイルやアプリなどの道具を使う</strong> — 必要な情報を集めて処理する</li>
+        <li><strong>③ 結果を確認し、足りなければやり直す</strong> — 最後に完成物を返す</li>
       </ul>
       <div class="callout warn">
-        <div class="callout-title">練習は自分のレシートで</div>
-        <p>レシートも顧問先の情報です。実データを渡すのは、事務所のルールと学習オフ設定を確認してから。</p>
+        <div class="callout-title">「何でも自動で正しくやるAI」ではありません</div>
+        <p>人が<strong>ゴール・触れてよい範囲・確認ポイント</strong>を決めることで、仕事として使えるようになります。</p>
       </div>
     </div>
   </div>
 
-  <!-- 7. Tips03 デスクトップアプリとの違い -->
+  <!-- 5. Tips03 動くイメージ -->
   <div class="slide">
     <div class="slide-inner">
       <div class="section-num">03</div>
-      <h2>「Codexアプリ」はどこへ? — <span class="accent">デスクトップ版との違い</span></h2>
-      <p>PCに入れるデスクトップアプリは、Codexアプリと統合されて<strong>1つのChatGPTアプリ</strong>になりました。同じエージェントでも「働く場所」が違います。</p>
-      <div class="compare">
-        <div class="compare-box before">
-          <div class="compare-label">デスクトップアプリ(Codex統合)</div>
-          PCの中のフォルダやアプリまで直接触って働ける。強力なぶん、<strong>触らせる範囲の設定</strong>が大事。
-        </div>
-        <div class="compare-box after">
-          <div class="compare-label">ブラウザ/スマホの Work — まずはこっち</div>
-          自分が渡したファイルの範囲で働く。手軽で、<strong>安全側から始められる</strong>。
-        </div>
-      </div>
-      <p style="font-size:0.9rem;">覚えるのは1つだけ: <strong>「PCの中まで任せたくなったらデスクトップ版」</strong>。今日はブラウザのWorkだけでOKです。</p>
+      <h2>エージェントは、<span class="accent">途中の工程をつなげる</span></h2>
+      <p><strong>ゴール:</strong> レシートとカード明細から、記帳前の確認資料を完成させる</p>
+      <ul class="point-list">
+        <li><strong>読み取る → 整理する</strong> — レシートと明細をそれぞれ表にする</li>
+        <li><strong>照合する → 不明点を分ける</strong> — 金額・日付を比べ、合わないものを抽出</li>
+        <li><strong>成果物を作る</strong> — CSV、不一致一覧、質問リストをまとめる</li>
+      </ul>
+      <p>ひとつひとつはChatでもできます。<strong>一連の流れとして任せる</strong>のがWorkです。</p>
     </div>
   </div>
 
-  <!-- 8. 注意点 安全の3つの約束 -->
+  <!-- 6. 実演1 Chat -->
+  <div class="slide">
+    <div class="slide-inner">
+      <span class="label">実演 1 — CHAT</span>
+      <h2>レシート1枚を、<span class="accent">CSVにする</span></h2>
+      <ul class="point-list">
+        <li><strong>① 私物のレシート画像を添付</strong></li>
+        <li><strong>② 欲しい列とルールを指示</strong> — 不明は「要確認」、科目は候補まで</li>
+        <li><strong>③ CSVを受け取り、日付と金額を確認</strong></li>
+      </ul>
+      <div class="callout">
+        <div class="callout-title">Chatが得意な仕事</div>
+        <p>材料が少なく、短い手順で終わる<strong>ひとつの作業</strong>。ここまでは普段のChatで十分です。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. 実演2 Work -->
+  <div class="slide">
+    <div class="slide-inner">
+      <span class="label">実演 2 — WORK</span>
+      <h2>複数資料から、<span class="accent">確認作業までまとめて任せる</span></h2>
+      <p><strong>材料:</strong> ダミーのレシート5枚 + ダミーのカード利用明細</p>
+      <ul class="point-list">
+        <li><strong>① 仕訳候補CSV</strong> — 読み取った情報と科目候補</li>
+        <li><strong>② 一致しない項目の一覧</strong> — 明細との不一致・重複・不足</li>
+        <li><strong>③ 人に確認する質問リスト</strong> — 判断できない点を推測せず分離</li>
+      </ul>
+      <div class="callout">
+        <div class="callout-title">実演中の見どころ</div>
+        <p>開始したら待たずに次のスライドへ。<strong>AIが作業中に、人は別の仕事へ進める</strong>ところも違いです。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 8. 税理士事務所での用途 -->
+  <div class="slide">
+    <div class="slide-inner">
+      <h2>税理士事務所でWorkが向くのは、<span class="accent">工程がつながる仕事</span></h2>
+      <ul class="point-list">
+        <li><strong>前期・当期の複数資料</strong> → 増減箇所、確認事項、顧問先への質問案</li>
+        <li><strong>面談の文字起こし + 関連資料</strong> → 議事録、宿題一覧、お礼メール案</li>
+        <li><strong>複数の証憑 + 利用明細</strong> → 入力候補、重複・不足一覧、検算結果</li>
+      </ul>
+      <p>目印は、<strong>複数の材料・複数の手順・複数の完成物</strong>があることです。</p>
+    </div>
+  </div>
+
+  <!-- 9. 正解率との違い -->
+  <div class="slide">
+    <div class="slide-inner">
+      <h2>Workは、<span class="accent">正解率を上げるモードではありません</span></h2>
+      <div class="compare">
+        <div class="compare-box after">
+          <div class="compare-label">変わること</div>
+          ・任せられる工程が長くなる<br>
+          ・使う材料や道具が増える<br>
+          ・複数の完成物を作りやすくなる
+        </div>
+        <div class="compare-box before">
+          <div class="compare-label">変わらないこと</div>
+          ・読み間違いや判断ミスはあり得る<br>
+          ・科目や税区分の確定は人が行う<br>
+          ・数字と根拠は人が検算する
+        </div>
+      </div>
+      <div class="callout warn">
+        <div class="callout-title">役割分担</div>
+        <p>AIは<strong>下ごしらえ・候補・確認事項の整理</strong>。最終判断と提出前確認は人の仕事です。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 10. 安全 -->
   <div class="slide">
     <div class="slide-inner">
       <span class="label">大事な注意点</span>
-      <h2>自分で動くAIには、<span class="accent">3つの約束</span></h2>
+      <h2>任せる範囲は、<span class="accent">人が決める</span></h2>
       <ul class="point-list">
-        <li><strong>① ダミーで練習してから実データ</strong> — 顧問先情報は、学習オフ設定+事務所ルールの範囲で</li>
-        <li><strong>② 任せても、最終判断は人</strong> — 勘定科目・税区分の確定はプロの仕事。AIの出力は「候補」と「下ごしらえ」まで</li>
-        <li><strong>③ 触らせる範囲は最小限</strong> — 渡すファイル・接続するアプリは必要な分だけ</li>
+        <li><strong>利用するデータは、各社・事務所のルールに従う</strong></li>
+        <li><strong>接続するファイルやアプリは、必要なものだけに絞る</strong></li>
+        <li><strong>重要な操作と完成物は、内容を確認してから使う</strong></li>
       </ul>
       <div class="callout warn">
-        <div class="callout-title">便利なほど起きやすい事故</div>
-        <p>エージェントは楽なぶん「確認せずにそのまま使う」事故が起きやすくなります。数字・日付・科目は必ず人の目で検算を。</p>
+        <div class="callout-title">実演・練習について</div>
+        <p>今日は私物またはダミーの資料を使用。顧問先データを扱う場合は、所属先のルールに沿って判断してください。</p>
       </div>
     </div>
   </div>
 
-  <!-- 9. よくある質問(セキュリティ) -->
+  <!-- 11. プロンプト集 -->
   <div class="slide">
     <div class="slide-inner">
-      <span class="label">よくある質問</span>
-      <h2>「ウイルスは? <span class="accent">勝手に漏れるのは?</span>」</h2>
-      <ul class="point-list">
-        <li><strong>ブラウザ版でPCにウイルスが入る心配はまずなし</strong> — エージェントはOpenAIのクラウドの中で働き、あなたのPCには触れない。ダウンロードしたファイルだけ、普通の添付ファイルと同じ注意を</li>
-        <li><strong>「勝手に外部送信」は条件が揃うとあり得る</strong> — 読み込んだページやファイルに隠された悪い指示にAIが従ってしまう攻撃(プロンプトインジェクション)が知られている</li>
-        <li><strong>危険なのは同時に揃ったときだけ</strong> — 機密データ × 外部のWeb閲覧・アプリ連携。今日の実演のような「閉じた使い方」なら、外に送る手段がそもそもない</li>
-      </ul>
-      <div class="callout">
-        <div class="callout-title">覚え方はこれだけ</div>
-        <p><strong>機密を渡すときは外(Web・連携)を切る。外を見せるときは機密を渡さない。</strong>心配なときは、接続を絞る「ロックダウンモード」という設定もあります。</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- 10. プロンプト集表紙 -->
-  <div class="slide">
-    <div class="slide-inner" style="text-align:center;">
-      <span class="label">APPENDIX</span>
-      <h1><span class="accent">コピペで使える</span><br>プロンプト集</h1>
-      <p>カードをクリックするとクリップボードにコピーされます。<br>[ ]の中を自分の状況に書き換えて、AIに貼り付けて使ってください。</p>
-    </div>
-  </div>
-
-  <!-- 11. プロンプトカード -->
-  <div class="slide">
-    <div class="slide-inner">
-      <h2 style="font-size:1.2rem; margin-bottom:20px;">プロンプト集 — <span class="accent">エージェントに任せる</span></h2>
+      <h2 style="font-size:1.2rem; margin-bottom:16px;">コピペで使える — <span class="accent">Chat版とWork版</span></h2>
 
       <div class="prompt-card" onclick="copyPrompt(this)">
         <button class="copy-btn">コピー</button>
-        <div class="prompt-card-title">レシート → 仕訳の下ごしらえCSV(実演で使ったもの)</div>
-        <div class="prompt-text">添付したレシート画像から、会計ソフトに取り込む前の「下ごしらえ用CSV」を作ってください。
-
+        <div class="prompt-card-title">Chat: レシート1枚をCSVにする</div>
+        <div class="prompt-text">添付したレシート画像から、下ごしらえ用CSVを作ってください。
 列: 日付 / 金額(税込) / 支払先 / 摘要 / 勘定科目の候補 / 要確認メモ
-
-ルール:
-・読み取りに自信がない箇所は推測せず「要確認」と書く
-・勘定科目は候補にとどめ、断定しない
-・最後に件数と金額合計の行を付ける(検算用)
-・CSVファイルとしてダウンロードできる形にする</div>
+不明な箇所は推測せず「要確認」、科目は候補にとどめ、最後に件数と金額合計を付けてください。</div>
       </div>
 
       <div class="prompt-card" onclick="copyPrompt(this)">
         <button class="copy-btn">コピー</button>
-        <div class="prompt-card-title">エージェントへの頼み方の型(何にでも使える)</div>
-        <div class="prompt-text">【ゴール】[最終的に欲しい完成物。例: 顧問先向けの説明資料1枚]
-【材料】[渡すファイルや情報]
-【完成物の形】[ファイル形式・列・枚数など]
-【ルール】不明点は推測せず「要確認」として一覧にする。大きな判断が必要になったら、進める前に私に確認する。</div>
+        <div class="prompt-card-title">Work: 照合と確認事項までまとめて任せる</div>
+        <div class="prompt-text">【ゴール】添付したレシート画像とカード利用明細を照合し、記帳前の確認資料を作る。
+【完成物】①仕訳候補CSV ②不一致・重複・不足の一覧 ③人に確認する質問リスト
+【確認】件数と金額合計を検算し、明細と一致しない項目を分ける。
+【ルール】不明点は推測せず「要確認」。科目は候補まで。大きな判断が必要なら進める前に確認する。</div>
       </div>
 
+      <p style="font-size:0.82rem; margin-top:4px;"><strong>頼み方の型:</strong> ゴール / 材料 / 完成物 / 検算 / 確認してほしいこと / 完了条件</p>
     </div>
   </div>
 
-  <!-- 12. 今週の宿題 -->
+  <!-- 12. 宿題 -->
   <div class="slide">
     <div class="slide-inner">
       <span class="label">今週の宿題</span>
-      <h2>自分の画面に「Work」が<span class="accent">来ているか見るだけ</span></h2>
-      <p>ChatGPTを開いて、エージェント(Work)が使えるようになっているか確認してください。来ていたら、<strong>自分のレシート1枚</strong>で今日のプロンプトを試してみる。ここまでで5分です。</p>
-      <p><strong>顧問先のレシートでは試さないこと。</strong>来週、「来てた? 動いた?」を教えてください。</p>
+      <h2>同じレシートを、<span class="accent">ChatとWorkの両方に頼んでみる</span></h2>
+      <div class="compare">
+        <div class="compare-box before">
+          <div class="compare-label">CHATへ</div>
+          「このレシートをCSVにして」
+        </div>
+        <div class="compare-box after">
+          <div class="compare-label">WORKへ</div>
+          「CSVを作り、読めない箇所を一覧化し、件数と合計を検算して」
+        </div>
+      </div>
+      <p>私物またはダミーのレシート1枚でOK。<strong>何が違ったか</strong>を、来週教えてください。</p>
     </div>
   </div>
 
   <!-- 13. エンド -->
   <div class="slide end-slide">
     <div class="slide-inner" style="text-align:center;">
-      <h2 style="font-size:clamp(1.6rem, 4vw, 2.4rem); margin-bottom:16px;">「聞くAI」から、「任せるAI」へ。</h2>
-      <p style="color:rgba(255,255,255,0.9);">最初の一件は小さくていい。今日のレシート1枚から。</p>
-      <p style="margin-top:32px; font-size:0.85rem; color:rgba(255,255,255,0.7);">AI Tips Weekly vol.4 AIエージェント編 | 2026年7月</p>
+      <h2 style="font-size:clamp(1.6rem, 4vw, 2.4rem); margin-bottom:16px;">Chatは、ひとつの作業を一緒に。<br>Workは、仕事のまとまりを任せる。</h2>
+      <p>まずは小さな仕事で、「どこまで任せるか」を試してみる。</p>
+      <p style="margin-top:32px; font-size:0.85rem; color:rgba(255,255,255,0.7);">AI Tips Weekly vol.4 | ChatとWorkの違い</p>
     </div>
   </div>
 
