@@ -4,4 +4,4 @@
 
 **https://umeharus2.github.io/AITips/**
 
-最新更新: vol.6「ExcelはAIに聞く。そして、そのまま渡す。」
+最新更新: vol.7「ChatGPT for Excel — Excelを閉じずに、そのまま頼む」
