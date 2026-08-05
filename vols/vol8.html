@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AIを勉強相手にする — 勉強は、ひとりでやらなくていい - AI Tips Weekly vol.8</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap');
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; overflow: hidden; font-family: "Noto Sans JP", -apple-system, BlinkMacSystemFont, sans-serif; background: #FDFAF6; color: #2C2416; }
+    .slides { height: 100vh; overflow: hidden; position: relative; }
+    .slide { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 48px; opacity: 0; transform: translateX(40px); transition: opacity 0.4s, transform 0.4s; pointer-events: none; }
+    .slide.active { opacity: 1; transform: translateX(0); pointer-events: auto; }
+    .slide-inner { max-width: 860px; width: 100%; }
+    .nav { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 16px; z-index: 100; }
+    .nav-btn { width: 48px; height: 48px; border-radius: 50%; border: 2px solid #2B8C7E; background: #fff; color: #2B8C7E; font-size: 1.3rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; box-shadow: 0 2px 8px rgba(0,0,0,0.08); -webkit-tap-highlight-color: transparent; user-select: none; }
+    .nav-btn:hover, .nav-btn:active { background: #2B8C7E; color: #fff; }
+    .nav-counter { font-size: 0.8rem; color: #8C7B6B; min-width: 60px; text-align: center; font-variant-numeric: tabular-nums; }
+    .progress { position: fixed; top: 0; left: 0; height: 3px; background: #2B8C7E; transition: width 0.4s; z-index: 100; }
+    .slide h1 { font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 900; line-height: 1.3; margin-bottom: 20px; color: #2C2416; }
+    .slide h2 { font-size: clamp(1.4rem, 3.5vw, 2rem); font-weight: 900; line-height: 1.4; margin-bottom: 24px; color: #2C2416; }
+    .slide p { font-size: clamp(0.95rem, 1.8vw, 1.15rem); line-height: 1.9; color: #5C4F3D; margin-bottom: 16px; }
+    .slide p strong { color: #2C2416; }
+    .accent { color: #2B8C7E; }
+    .section-num { font-size: clamp(3rem, 8vw, 5rem); font-weight: 900; color: rgba(43,140,126,0.08); line-height: 1; margin-bottom: -12px; }
+    .label { display: inline-block; border: 1px solid #2B8C7E; color: #2B8C7E; padding: 4px 14px; font-size: 0.75rem; letter-spacing: 0.1em; margin-bottom: 24px; border-radius: 4px; }
+    .point-list { list-style: none; margin: 20px 0; }
+    .point-list li { padding: 10px 0 10px 24px; position: relative; color: #5C4F3D; font-size: clamp(0.9rem, 1.6vw, 1.05rem); line-height: 1.7; }
+    .point-list li::before { content: ""; position: absolute; left: 0; top: 18px; width: 10px; height: 3px; background: #2B8C7E; }
+    .point-list li strong { color: #2C2416; }
+    .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 24px 0; }
+    .compare-box { padding: 24px; border-radius: 10px; font-size: clamp(0.85rem, 1.4vw, 0.95rem); line-height: 1.8; color: #2C2416; }
+    .compare-box.before { background: #F0ECE6; }
+    .compare-box.after { background: #D4EDDA; }
+    .compare-label { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; margin-bottom: 10px; color: #8C7B6B; }
+    .compare-box.after .compare-label { color: #2B8C7E; }
+    .callout { border-left: 3px solid #2B8C7E; padding: 16px 20px; margin: 20px 0; background: rgba(43,140,126,0.06); border-radius: 0 8px 8px 0; }
+    .callout-title { font-weight: 700; font-size: 0.8rem; color: #2B8C7E; margin-bottom: 4px; letter-spacing: 0.05em; }
+    .callout p { margin-bottom: 0; }
+    .callout.warn { border-left-color: #D4644A; background: rgba(212,100,74,0.06); }
+    .callout.warn .callout-title { color: #D4644A; }
+    .role-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 24px 0; }
+    .role-card { background: #fff; border: 1px solid #E8E2D9; border-radius: 12px; padding: 22px; min-height: 190px; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
+    .role-no { font-size: 0.7rem; font-weight: 700; color: #2B8C7E; letter-spacing: 0.1em; margin-bottom: 8px; }
+    .role-title { font-size: 1.05rem; font-weight: 900; margin-bottom: 10px; }
+    .role-desc { font-size: 0.85rem; line-height: 1.75; color: #5C4F3D; }
+    .prompt-card { background: #fff; border: 1px solid #E8E2D9; border-radius: 10px; padding: 15px 20px; margin-bottom: 10px; position: relative; cursor: pointer; transition: border-color 0.15s, box-shadow 0.15s; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
+    .prompt-card:hover { border-color: #2B8C7E; box-shadow: 0 2px 12px rgba(43,140,126,0.1); }
+    .prompt-card .prompt-card-title { font-weight: 700; font-size: 0.8rem; color: #2B8C7E; margin-bottom: 4px; }
+    .prompt-card .prompt-text { font-size: clamp(0.72rem, 1.15vw, 0.82rem); color: #5C4F3D; line-height: 1.55; padding-right: 46px; }
+    .copy-btn { position: absolute; top: 10px; right: 10px; background: #F0ECE6; border: none; color: #8C7B6B; font-size: 0.68rem; padding: 4px 9px; border-radius: 4px; cursor: pointer; transition: all 0.15s; }
+    .copy-btn:hover { background: #2B8C7E; color: #fff; }
+    .copy-btn.copied { background: #2B8C7E; color: #fff; }
+    .small-note { font-size: 0.78rem !important; color: #8C7B6B !important; line-height: 1.65 !important; }
+    .slide.title-slide .slide-inner { max-width: 780px; }
+    .slide.end-slide { background: #2B8C7E; }
+    .slide.end-slide h2 { color: #fff; }
+    .slide.end-slide p { color: rgba(255,255,255,0.9); }
+    @media (max-width: 700px) {
+      .compare { grid-template-columns: 1fr; gap: 12px; }
+      .role-grid { grid-template-columns: 1fr; gap: 12px; }
+      .role-card { min-height: 0; padding: 16px 18px; }
+    }
+    @media (max-width: 600px) {
+      .slide { padding: 24px 20px 80px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="progress" id="progress"></div>
+
+<div class="slides" id="slides">
+
+  <div class="slide title-slide active">
+    <div class="slide-inner">
+      <span class="label">AI TIPS WEEKLY vol.8</span>
+      <h1>勉強は、<br><span class="accent">ひとりでやらなくていい。</span></h1>
+      <p>税理士試験も、研修も、日々の調べものも。<br>AIを「24時間つきあってくれる勉強相手」にする10分。</p>
+      <p style="margin-top:32px; font-size:0.85rem; color:#8C7B6B;">← → キーまたはクリックで進む</p>
+    </div>
+  </div>
+
+  <div class="slide">
+    <div class="slide-inner">
+      <h2>この時間、<span class="accent">もったいなく</span>ないですか？</h2>
+      <ul class="point-list">
+        <li><strong>同じ段落を3回読んでも、頭に入ってこない</strong> — わからないまま、とりあえず先に進む</li>
+        <li><strong>調べた言葉の説明に、また知らない言葉が出てくる</strong> — 用語をたどるだけで時間が終わる</li>
+        <li><strong>覚えたつもりが、いざ書こうとすると出てこない</strong> — 読み返す時間ばかり増えていく</li>
+      </ul>
+      <p>机の前に、質問できる相手はいません。<br><strong>AIなら、何時でも、何度でも聞けます。</strong></p>
+    </div>
+  </div>
+
+  <div class="slide">
+    <div class="slide-inner">
+      <h2>AIは先生ではなく、<span class="accent">3つの役</span>で使う</h2>
+      <div class="role-grid">
+        <div class="role-card">
+          <div class="role-no">ROLE 1</div>
+          <div class="role-title">通訳</div>
+          <div class="role-desc">難しい説明を、自分がわかる言葉に置き換えてもらう。</div>
+        </div>
+        <div class="role-card">
+          <div class="role-no">ROLE 2</div>
+          <div class="role-title">出題者</div>
+          <div class="role-desc">覚えたかどうかを、問題にして確かめてもらう。</div>
+        </div>
+        <div class="role-card">
+          <div class="role-no">ROLE 3</div>
+          <div class="role-title">司書</div>
+          <div class="role-desc">手持ちの教材の中<strong>だけ</strong>から、答えを探してもらう。</div>
+        </div>
+      </div>
+      <p class="small-note">「正解を教わる相手」にすると事故ります。正はいつでも教材と原典です。</p>
+    </div>
+  </div>
+
+  <div class="slide">
+    <div class="slide-inner">
+      <div class="section-num">01</div>
+      <h2>わからない言葉は、<span class="accent">自分のレベルまで</span>下ろす</h2>
+      <p>AIに足りないのは知識ではなく、<strong>あなたが今どこまでわかっているかの情報</strong>です。そこを先に伝えるだけで、返ってくる説明が変わります。</p>
+      <div class="callout">
+        <div class="callout-title">先に伝える3点</div>
+        <p>①いまの自分のレベル(「簿記2級まで」など)　②説明してほしい順番　③専門用語を使うときは補足をつけること</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide">
+    <div class="slide-inner">
+      <h2>聞き方の<span class="accent">Before / After</span></h2>
+      <div class="compare">
+        <div class="compare-box before">
+          <div class="compare-label">BEFORE — 用語をそのまま投げる</div>
+          「圧縮記帳について教えて」<br><br>→ テキストとほとんど同じ難しい説明が返ってくる。結局わからないまま閉じる。
+        </div>
+        <div class="compare-box after">
+          <div class="compare-label">AFTER — レベルと順番を伝える</div>
+          「<strong>簿記2級までの知識しかない前提</strong>で、圧縮記帳を説明してください。<strong>①ひとことで言うと ②身近なたとえ ③つまずきやすい点</strong>の順で。専門用語には初めて出たところにカッコで補足を」<br><br>→ 人に説明できるところまで下りてくる。
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide">
+    <div class="slide-inner">
+      <h2>それでも難しければ、<span class="accent">もう一段</span>下ろす</h2>
+      <ul class="point-list">
+        <li>「いまの説明の中で、<strong>私が知らなそうな言葉を3つ</strong>挙げて、それも説明して」</li>
+        <li>「<strong>小学生に話すつもり</strong>で、もう一度」</li>
+        <li>「<strong>たとえ話を3つ</strong>出して。しっくりくるものは私が選びます」</li>
+      </ul>
+      <div class="callout">
+        <div class="callout-title">人に聞くのとの違い</div>
+        <p>3回聞き直しても、AIは嫌な顔をしません。<strong>わかるまで下ろせる</strong>のが、AIに聞く一番の利点です。</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide">
+    <div class="slide-inner">
+      <div class="section-num">02</div>
+      <h2>覚えたかどうかは、<span class="accent">問題にして</span>確かめる</h2>
+      <p>読み返すより、思い出すほうが定着します。今日読んだ範囲をAIに渡して、<strong>出題者になってもらいましょう。</strong></p>
+      <ul class="point-list">
+        <li><strong>一問一答を作らせる</strong> — 「答えは後でまとめて」と言うと自己採点しやすい</li>
+        <li><strong>自分の答えを採点させる</strong> — 足りない論点だけを指摘してもらう</li>
+        <li><strong>自分の言葉で説明して貼る</strong> — 「これで人に伝わるか」を見てもらう</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="slide">
+    <div class="slide-inner">
+      <h2>暗記のチェックは、<span class="accent">原文を貼ってから</span></h2>
+      <div class="compare">
+        <div class="compare-box before">
+          <div class="compare-label">BEFORE — AIに原文を書かせる</div>
+          「[理論名]の条文を書いて。私の暗記と比べて」<br><br>→ AIが作った<strong>“それっぽい原文”</strong>と比べることになる。間違ったまま覚え直してしまう。
+        </div>
+        <div class="compare-box after">
+          <div class="compare-label">AFTER — 正解は自分が渡す</div>
+          「正しい原文はこれです:(教材の文章を貼る)<br>次に私が書いたものを貼ります。<strong>抜けている箇所と違う箇所だけ</strong>指摘してください」<br><br>→ 正は自分の教材。AIは<strong>“見比べる係”</strong>に徹する。
+        </div>
+      </div>
+      <p class="small-note">理論暗記にかぎらず、覚えた内容の確認全般に使える型です。</p>
+    </div>
+  </div>
+
+  <div class="slide">
+    <div class="slide-inner">
+      <div class="section-num">03</div>
+      <h2>手持ちの教材<span class="accent">だけ</span>から答えさせる</h2>
+      <p><strong>Gemini Notebook(旧 NotebookLM)</strong> は、自分がアップロードした資料の中だけを見て答えるGoogleのツールです。Googleアカウントがあれば無料で使えます。</p>
+      <ul class="point-list">
+        <li><strong>ネットの情報を混ぜない</strong> — 教材と食い違う説明が返ってこない</li>
+        <li><strong>答えに出典がつく</strong> — クリックすると元資料の該当箇所に飛べる</li>
+        <li><strong>音声で解説させられる</strong> — 資料の内容を対話形式で聞ける。移動中の復習に</li>
+      </ul>
+      <p class="small-note">2026年7月に NotebookLM から Gemini Notebook へ名前が変わりました。中身は同じものです。</p>
+    </div>
+  </div>
+
+  <div class="slide">
+    <div class="slide-inner">
+      <h2>勉強に使うときの、<span class="accent">3つの約束</span></h2>
+      <div class="callout warn">
+        <div class="callout-title">大前提 — AIはもっともらしく間違えます</div>
+        <p>事実でないことを自信たっぷりに答えてしまうことがあります(ハルシネーションと呼ばれます)。だからこそ、下の3つを守ってください。</p>
+      </div>
+      <ul class="point-list">
+        <li><strong>数字・要件・期限は必ず確認する</strong> — 正はいつも教材と原典。答練や過去問の正解も、予備校の解答が正です</li>
+        <li><strong>「いつ時点の話か」を聞く</strong> — 税法は改正されます。古い年度の説明が返ることがあります</li>
+        <li><strong>読ませるのは自分の教材まで</strong> — 教材には著作権があります。自分の勉強用にとどめ、共有しない。顧問先の資料を練習台にしない</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="slide">
+    <div class="slide-inner">
+      <h2 style="font-size:1.2rem; margin-bottom:16px;">コピペで使える — <span class="accent">勉強のお供4つ</span></h2>
+
+      <div class="prompt-card" onclick="copyPrompt(this)">
+        <button class="copy-btn">コピー</button>
+        <div class="prompt-card-title">① 難しい言葉を自分のレベルまで下ろす</div>
+        <div class="prompt-text">[簿記2級]までの知識しかない前提で、[圧縮記帳]を説明してください。①ひとことで言うと ②身近なたとえ ③つまずきやすい点、の順でお願いします。専門用語を使うときは、初めて出てきたところにカッコで補足をつけてください。</div>
+      </div>
+
+      <div class="prompt-card" onclick="copyPrompt(this)">
+        <button class="copy-btn">コピー</button>
+        <div class="prompt-card-title">② 今日の範囲から問題を出させる</div>
+        <div class="prompt-text">これから貼る範囲から、一問一答を10問作ってください。まず問題だけ10問を出し、答えは私が「答え」と送ってからまとめて出してください。範囲はこちらです:[ここに今日読んだ範囲を貼る]</div>
+      </div>
+
+      <div class="prompt-card" onclick="copyPrompt(this)">
+        <button class="copy-btn">コピー</button>
+        <div class="prompt-card-title">③ 自分の理解を採点させる</div>
+        <div class="prompt-text">[テーマ]について、私が理解した内容を書きます。事実として間違っている点と、説明に足りない論点だけを指摘してください。文章のうまさは見なくて大丈夫です。私の説明:[ここに自分の言葉で書いた説明を貼る]</div>
+      </div>
+
+      <div class="prompt-card" onclick="copyPrompt(this)">
+        <button class="copy-btn">コピー</button>
+        <div class="prompt-card-title">④ 暗記チェック(原文を先に渡す)</div>
+        <div class="prompt-text">正しい原文はこちらです:[ここに教材の原文を貼る]　次に、私が思い出して書いたものを貼ります:[ここに自分が書いたものを貼る]　抜けている箇所と、言い回しが違う箇所だけを一覧で指摘してください。原文にない内容を足さないでください。</div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="slide">
+    <div class="slide-inner">
+      <span class="label">今週の宿題</span>
+      <h2>今週わからなかった言葉を、<br><span class="accent">1つだけ</span>AIに下ろさせる</h2>
+      <p>自分のレベルを伝えて、たとえ話つきで説明させてみてください。<br><strong>5分で終わります。</strong></p>
+      <p>来週、「どの言葉でやってみたか」を教えてください。</p>
+    </div>
+  </div>
+
+  <div class="slide end-slide">
+    <div class="slide-inner" style="text-align:center;">
+      <h2 style="font-size:clamp(1.6rem, 4vw, 2.4rem); margin-bottom:16px;">わからないまま閉じる夜が、<br>なくなります。</h2>
+      <p>AIは先生ではありません。<br>でも、何時でも、何度でも、同じ質問に付き合ってくれます。</p>
+      <p style="margin-top:32px; font-size:0.85rem; color:rgba(255,255,255,0.7);">AI Tips Weekly vol.8 勉強編 | 2026年8月</p>
+    </div>
+  </div>
+
+</div>
+
+<div class="nav"><button class="nav-btn" id="prevBtn" aria-label="前へ">&#8592;</button><span class="nav-counter" id="counter">1 / 13</span><button class="nav-btn" id="nextBtn" aria-label="次へ">&#8594;</button></div>
+
+<script>
+(function(){var slides=document.querySelectorAll('.slide');var counter=document.getElementById('counter');var progress=document.getElementById('progress');var prevBtn=document.getElementById('prevBtn');var nextBtn=document.getElementById('nextBtn');var current=0;function showSlide(index){for(var i=0;i<slides.length;i++){slides[i].classList.remove('active');slides[i].style.transform=i<index?'translateX(-40px)':'translateX(40px)';}slides[index].classList.add('active');slides[index].style.transform='translateX(0)';counter.textContent=(index+1)+' / '+slides.length;progress.style.width=((index+1)/slides.length*100)+'%';}function changeSlide(dir){var next=current+dir;if(next<0||next>=slides.length)return;current=next;showSlide(current);}prevBtn.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();changeSlide(-1);});nextBtn.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();changeSlide(1);});document.addEventListener('keydown',function(e){if(e.key==='ArrowRight'||e.key==='ArrowDown'||e.key===' '){e.preventDefault();changeSlide(1);}if(e.key==='ArrowLeft'||e.key==='ArrowUp'){e.preventDefault();changeSlide(-1);}});document.getElementById('slides').addEventListener('click',function(e){if(e.target.closest('.prompt-card')||e.target.closest('.copy-btn')||e.target.closest('a'))return;changeSlide(e.clientX>window.innerWidth*0.5?1:-1);});var touchStartX=0;document.addEventListener('touchstart',function(e){touchStartX=e.touches[0].clientX;});document.addEventListener('touchend',function(e){var diff=touchStartX-e.changedTouches[0].clientX;if(Math.abs(diff)>50)changeSlide(diff>0?1:-1);});window.copyPrompt=function(card){var text=card.querySelector('.prompt-text').textContent;navigator.clipboard.writeText(text).then(function(){var btn=card.querySelector('.copy-btn');btn.textContent='OK!';btn.classList.add('copied');setTimeout(function(){btn.textContent='コピー';btn.classList.remove('copied');},1500);});};showSlide(0);})();
+</script>
+
+</body>
+</html>

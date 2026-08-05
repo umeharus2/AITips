@@ -4,4 +4,4 @@
 
 **https://umeharus2.github.io/AITips/**
 
-最新更新: vol.7「ChatGPT for Excel — Excelを閉じずに、そのまま頼む」
+最新更新: vol.8「勉強は、ひとりでやらなくていい — AIを勉強相手にする」
